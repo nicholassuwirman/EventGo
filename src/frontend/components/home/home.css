@@ -1,0 +1,12 @@
+.home-container {
+    padding-top: 4vh;
+    padding-bottom: 4vh;
+    padding-left: 6vh;
+    padding-right: 6vh;
+}
+
+.home-section-container {
+    height: 20%;
+    width: 100%;
+    background-color: aqua;
+}

@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# FWE-HA-1123080
-Repository for FWE Hausaufgabe Event Planner
-=======
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -75,4 +71,6 @@ export default defineConfig([
   },
 ])
 ```
->>>>>>> 8ca7a78 (Initial commit event planner for FWE HA)
+
+# FWE-HA-1123080
+Repository for FWE Hausaufgabe Event Planner
