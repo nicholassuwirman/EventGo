@@ -1,0 +1,103 @@
+.events-home-container {
+    padding: 3vh 6vw;
+}
+
+.events-home-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2vh;
+}
+
+.events-home-add-btn {
+    background: var(--orange);
+    color: #fff;
+    padding: 0.5em 1.2em;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: background 0.18s;
+    cursor: pointer;
+}
+.events-home-add-btn:hover {
+    background: #ff944d;
+}
+
+.events-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2vw;
+}
+
+.event-card {
+    display: flex;
+    background: #fff;
+    border: 2px solid var(--orange);
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    padding: 1.2em;
+    max-width: 420px;
+    width: 100%;
+    align-items: center;
+}
+
+.event-card-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 16px;
+    margin-right: 2vw;
+    background: #eee;
+}
+
+.event-card-details {
+    flex: 1;
+}
+
+.event-card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.5em;
+}
+
+.event-card-date,
+.event-card-duration {
+    font-size: 1rem;
+    margin-bottom: 0.3em;
+}
+
+.event-card-actions {
+    margin-top: 1em;
+    display: flex;
+    gap: 1em;
+}
+
+.event-card-edit,
+.event-card-delete {
+    padding: 0.4em 1em;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background 0.18s;
+}
+
+.event-card-edit {
+    background: var(--blue);
+    color: #fff;
+}
+.event-card-edit:hover {
+    background: #0033bb;
+}
+
+.event-card-delete {
+    background: #eee;
+    color: #d33;
+}
+.event-card-delete:hover {
+    background: #ffd6d6;
+}

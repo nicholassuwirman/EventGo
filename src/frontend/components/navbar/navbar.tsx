@@ -5,9 +5,9 @@ import './navbar.css';
 const Navbar: React.FC = () => {
     return (
         <nav className='navbar-container'>
-            <p className='event-go-text'>
+            <Link to="/" className='event-go-text'>
                 EventGo
-            </p>
+            </Link>
             <div className="navbar-search">
                 <input
                     type="text"

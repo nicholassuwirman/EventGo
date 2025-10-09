@@ -11,6 +11,12 @@
     font-size: 1.7rem;
     font-weight: 800;
     color: var(--orange);
+    text-decoration: none; /* Remove underline */
+    cursor: pointer;
+}
+
+.event-go-text:hover {
+    color: #ff944d; /* Slightly darker orange on hover */
 }
 
 .navbar-search {
