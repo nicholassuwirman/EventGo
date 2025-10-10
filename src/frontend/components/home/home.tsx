@@ -44,10 +44,10 @@ const Home: React.FC = () => {
 
       <HomeSection
         imageName={homePeopleImg}
-        description1="People"
+        description1="Participants"
         description2="Easily add, view, and manage event participants."
         description3="View Participants"
-        linkTo="/participants"
+        linkTo="/participantsHome"
       />
     </div>
   );

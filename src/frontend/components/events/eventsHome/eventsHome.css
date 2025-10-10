@@ -1,5 +1,8 @@
 .events-home-container {
-    padding: 3vh 6vw;
+    padding-top: 4vh;
+    padding-bottom: 4vh;
+    padding-left: 6vh;
+    padding-right: 6vh;
 }
 
 .events-home-header {

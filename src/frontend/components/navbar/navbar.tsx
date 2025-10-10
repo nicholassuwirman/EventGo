@@ -8,6 +8,20 @@ const Navbar: React.FC = () => {
             <Link to="/" className='event-go-text'>
                 EventGo
             </Link>
+
+            <div className='navbar-links-container'>
+                <Link to="/eventsHome" className='navbar-links'>
+                    Events
+                </Link>
+                <Link to="/tags" className='navbar-links'>
+                    Tags
+                </Link>
+                <Link to="/participantsHome" className='navbar-links'>
+                    Participants
+                </Link>
+            </div>
+           
+
             <div className="navbar-search">
                 <input
                     type="text"
@@ -15,18 +29,8 @@ const Navbar: React.FC = () => {
                     className="navbar-search-input"
                 />
             </div>
-            <Link to="/" className='navbar-links'>
-                Home
-            </Link>
-            <Link to="/events" className='navbar-links'>
-                Events
-            </Link>
-            <Link to="/tags" className='navbar-links'>
-                Tags
-            </Link>
-            <Link to="/participants" className='navbar-links'>
-                Participants
-            </Link>
+            
+            
         </nav>
     );
 };

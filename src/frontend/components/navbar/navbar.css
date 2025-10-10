@@ -3,20 +3,32 @@
     padding-right: 2vw;
     padding-top: 2vh;
     padding-bottom: 2vh;
-    border-bottom: 1px solid #e0e0e0; /* light gray line */
+    border-bottom: 1px solid #e0e0e0;
     display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .event-go-text {
     font-size: 1.7rem;
     font-weight: 800;
     color: var(--orange);
-    text-decoration: none; /* Remove underline */
+    text-decoration: none;
     cursor: pointer;
 }
 
 .event-go-text:hover {
-    color: #ff944d; /* Slightly darker orange on hover */
+    color: #ff944d;
+}
+
+.navbar-links-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    gap: 2vw;
+    margin-left: 10vw;
+    margin-left: 10vw;
 }
 
 .navbar-search {
@@ -50,8 +62,6 @@
 }
 
 .navbar-links {
-    margin-right: 2vw;
     text-decoration: none;
     padding-top: 1vh;
-
 }

@@ -7,6 +7,7 @@ type Event = {
   date: string;
   duration: string;
   description: string;
+  place: string;
 };
 
 type EventCardProps = {
@@ -15,6 +16,7 @@ type EventCardProps = {
   onDelete: (id: number) => void;
 };
 
+//this is the event card
 const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => (
   <div className="event-card">
     <div className="event-card-details">
@@ -22,6 +24,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => (
       <p className="event-card-date">Date: {event.date}</p>
       <p className="event-card-duration">Duration: {event.duration}</p>
       <p className="event-card-duration">Description: {event.description}</p>
+      <p className="event-card-duration">Place: {event.place}</p>
       <div className="event-card-actions">
         <button className="event-card-edit" onClick={() => onEdit(event)}>Edit</button>
         <button className="event-card-delete" onClick={() => onDelete(event.id)}>Delete</button>
@@ -38,7 +41,8 @@ const EventsHome: React.FC = () => {
     name: '',
     date: '',
     duration: '',
-    description: ''
+    description: '',
+    place: ''
   });
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
@@ -80,7 +84,7 @@ const EventsHome: React.FC = () => {
             return [...events, savedEvent];
           }
         });
-        setFormData({ name: '', date: '', duration: '', description: '' });
+        setFormData({ name: '', date: '', duration: '', description: '' , place: ''});
         setShowModal(false);
         setEditingEvent(null);
       } else {
@@ -118,7 +122,7 @@ const EventsHome: React.FC = () => {
   const closeModal = () => {
     setShowModal(false);
     setEditingEvent(null);
-    setFormData({ name: '', date: '', duration: '', description: '' });
+    setFormData({ name: '', date: '', duration: '', description: '', place: '' });
   };
 
   // Handle edit button click
@@ -128,7 +132,8 @@ const EventsHome: React.FC = () => {
       name: event.name,
       date: event.date,
       duration: event.duration,
-      description: event.description
+      description: event.description,
+      place: event.place
     });
     setShowModal(true);
   };
@@ -166,6 +171,7 @@ const EventsHome: React.FC = () => {
         )}
       </div>
       
+      {/* ab this is the pop out edit event window */}
       {showModal && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -201,6 +207,16 @@ const EventsHome: React.FC = () => {
                   value={formData.duration}
                   onChange={handleInputChange}
                 />
+              <label>
+                Place:
+                <input 
+                  type="text" 
+                  name="place" 
+                  placeholder="Place" 
+                  value={formData.place}
+                  onChange={handleInputChange}
+                />
+              </label>
               </label>
               <label>
                 Description:

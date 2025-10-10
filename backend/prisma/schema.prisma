@@ -11,10 +11,17 @@ model Event {
   id          Int      @id @default(autoincrement())
   name        String
   date        DateTime
-  duration    String?
-  description String?
+  duration    String
+  description String
+  place       String
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("events")
+}
+
+model Participant {
+  id         Int      @id @default(autoincrement())
+  name       String
+  age        Int
 }

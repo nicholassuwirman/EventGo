@@ -11,6 +11,7 @@ interface Event {
   date: string;
   duration: string;
   description: string;
+  place: string;
 }
 
 // Mock events
@@ -20,7 +21,8 @@ const mockEvents: Event[] = [
     name: 'Sample Event',
     date: '2025-10-15',
     duration: '2 hours',
-    description: 'This is a sample event'
+    description: 'This is a sample event',
+    place: 'Furtfrank'
   }
 ];
 
@@ -37,13 +39,14 @@ app.get('/api/events', (_req: Request, res: Response) => {
 
 // POST /api/events/:id to add an event
 app.post('/api/events', (req: Request, res: Response) => {
-  const { name, date, duration, description } = req.body;
+  const { name, date, duration, description, place } = req.body;
   const newEvent: Event = {
     id: mockEvents.length + 1,
     name,
     date,
     duration,
-    description
+    description, 
+    place
   };
   mockEvents.push(newEvent);
   res.status(201).json(newEvent);
@@ -60,10 +63,10 @@ app.delete('/api/events/:id', (req: Request, res: Response) => {
   res.json({ message: 'Event deleted successfully' });
 });
 
-// PUT /api/events/:id to Update event
+// PUT /api/events/:id to update an event
 app.put('/api/events/:id', (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, date, duration, description } = req.body;
+  const { name, date, duration, description, place } = req.body;
   const eventIndex = mockEvents.findIndex(event => event.id === parseInt(id));
   if (eventIndex === -1) {
     return res.status(404).json({ error: 'Event not found' });
@@ -73,7 +76,8 @@ app.put('/api/events/:id', (req: Request, res: Response) => {
     name,
     date,
     duration,
-    description
+    description,
+    place
   };
   res.json(mockEvents[eventIndex]);
 });
@@ -84,85 +88,64 @@ app.listen(PORT, () => {
   console.log(`Events API: http://localhost:${PORT}/api/events`);
 });
 
-// Add these new state variables at the top of EventsHome component
-const EventsHome: React.FC = () => {
-  const [showModal, setShowModal] = useState(false);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editingEvent, setEditingEvent] = useState<Event | null>(null); // NEW: Track which event is being edited
-  const [formData, setFormData] = useState({
-    name: '',
-    date: '',
-    duration: '',
-    description: ''
-  });
+//---PARTICIPANTS---
+// Type for participants
+interface Participant {
+  id: number;
+  name: string;
+  age: number;
+}
 
-  // ... existing code ...
+//test participant
+const testParticipant: Participant[] = [
+  {
+    id: 1,
+    name: 'Johnny Doe',
+    age: 30,
+  }
+];
 
-  // NEW: Handle editing an event
-  const handleEditEvent = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!editingEvent) return;
-    
-    try {
-      console.log('Updating event with ID:', editingEvent.id);
-      const response = await fetch(`http://localhost:4000/api/events/${editingEvent.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-      
-      if (response.ok) {
-        const updatedEvent = await response.json();
-        console.log('Event updated:', updatedEvent);
-        
-        // Update the event in the list
-        setEvents(events.map(event => 
-          event.id === editingEvent.id ? updatedEvent : event
-        ));
-        
-        // Reset form and close modal
-        setFormData({ name: '', date: '', duration: '', description: '' });
-        setEditingEvent(null);
-        setShowModal(false);
-      } else {
-        console.error('Failed to update event');
-      }
-    } catch (error) {
-      console.error('Error updating event:', error);
-    }
+//add participant to database
+app.post('/api/participants', (req: Request, res: Response) => {
+  const { name, age } = req.body;
+
+  const newParticipant: Participant = {
+    id: testParticipant.length + 1,
+    name,
+    age
   };
+  testParticipant.push(newParticipant);
+  res.status(201).json(newParticipant)
+})
 
-  // NEW: Handle clicking the Edit button
-  const handleEditClick = (event: Event) => {
-    setEditingEvent(event);
-    setFormData({
-      name: event.name,
-      date: event.date,
-      duration: event.duration,
-      description: event.description
-    });
-    setShowModal(true);
+//get all participants
+app.get('/api/participants', (_req: Request, res: Response) => {
+  res.json(testParticipant);
+});
+
+//delete a participant - FIX: Use testParticipant array, not mockEvents
+app.delete('/api/participants/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  const participantIndex = testParticipant.findIndex(participant => participant.id === parseInt(id));
+  if(participantIndex === -1) {
+    return res.status(404).json({ error: 'Participant not found'});
+  }
+  testParticipant.splice(participantIndex, 1); // FIX: Use testParticipant
+  res.json({message: 'Participant deleted successfully'});
+})
+
+//edit a participant - FIX: Remove comma and fix variable names
+app.put('/api/participants/:id', (req: Request, res: Response) => {
+  const {id} = req.params;
+  const { name, age } = req.body;
+  const participantIndex = testParticipant.findIndex(participant => participant.id === parseInt(id));
+  if(participantIndex === -1) {
+    return res.status(404).json({ error: 'Participant not found'});
+  }
+  testParticipant[participantIndex] = {
+    ...testParticipant[participantIndex],
+    name,
+    age
   };
-
-  // UPDATE: Modified form submission handler
-  const handleFormSubmit = (e: React.FormEvent) => {
-    if (editingEvent) {
-      handleEditEvent(e);
-    } else {
-      handleAddEvent(e);
-    }
-  };
-
-  // UPDATE: Reset editing state when closing modal
-  const closeModal = () => {
-    setShowModal(false);
-    setEditingEvent(null);
-    setFormData({ name: '', date: '', duration: '', description: '' });
-  };
-
-  // ... rest of existing code ...
-
+  res.json(testParticipant[participantIndex]);
+});

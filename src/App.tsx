@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Navbar from './frontend/components/navbar/navbar'
 import Home from './frontend/components/home/home'
 import EventsHome from './frontend/components/events/eventsHome/eventsHome'
+import ParticipantsHome from './frontend/components/participants/participantsHome' // Add this import
 import './App.css'
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
           <Route path="/eventsHome" element={<EventsHome />} />
+          <Route path="/participantsHome" element={<ParticipantsHome />} /> {/* Add this route */}
         </Routes>
       </main>
     </Router>
