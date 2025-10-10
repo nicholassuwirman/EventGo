@@ -11,19 +11,19 @@ type Event = {
 
 type EventCardProps = {
   event: Event;
+  onEdit: (event: Event) => void;
   onDelete: (id: number) => void;
 };
 
-const EventCard: React.FC<EventCardProps> = ({ event, onDelete }) => (
+const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => (
   <div className="event-card">
-    <img src="/assets/event-example.jpg" alt="Event" className="event-card-image" />
     <div className="event-card-details">
       <h3 className="event-card-title">{event.name}</h3>
       <p className="event-card-date">Date: {event.date}</p>
       <p className="event-card-duration">Duration: {event.duration}</p>
       <p className="event-card-duration">Description: {event.description}</p>
       <div className="event-card-actions">
-        <button className="event-card-edit">Edit</button>
+        <button className="event-card-edit" onClick={() => onEdit(event)}>Edit</button>
         <button className="event-card-delete" onClick={() => onDelete(event.id)}>Delete</button>
       </div>
     </div>
@@ -40,6 +40,7 @@ const EventsHome: React.FC = () => {
     duration: '',
     description: ''
   });
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
   // Fetch events from backend
   const fetchEvents = async () => {
@@ -54,34 +55,39 @@ const EventsHome: React.FC = () => {
     }
   };
 
-  // Add new event
-  const handleAddEvent = async (e: React.FormEvent) => {
+  // Add or update event
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted with data:', formData);
     
     try {
-      console.log('Sending request to backend...');
-      const response = await fetch('http://localhost:4000/api/events', {
-        method: 'POST',
+      const url = editingEvent ? `http://localhost:4000/api/events/${editingEvent.id}` : 'http://localhost:4000/api/events';
+      const method = editingEvent ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),
       });
       
-      console.log('Response status:', response.status);
-      
       if (response.ok) {
-        const newEvent = await response.json();
-        console.log('New event created:', newEvent);
-        setEvents([...events, newEvent]);
+        const savedEvent = await response.json();
+        setEvents(events => {
+          if (editingEvent) {
+            return events.map(event => event.id === savedEvent.id ? savedEvent : event);
+          } else {
+            return [...events, savedEvent];
+          }
+        });
         setFormData({ name: '', date: '', duration: '', description: '' });
         setShowModal(false);
+        setEditingEvent(null);
       } else {
         console.error('Response not ok:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error('Error adding event:', error);
+      console.error('Error saving event:', error);
     }
   };
 
@@ -106,6 +112,25 @@ const EventsHome: React.FC = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  // Close modal
+  const closeModal = () => {
+    setShowModal(false);
+    setEditingEvent(null);
+    setFormData({ name: '', date: '', duration: '', description: '' });
+  };
+
+  // Handle edit button click
+  const handleEditClick = (event: Event) => {
+    setEditingEvent(event);
+    setFormData({
+      name: event.name,
+      date: event.date,
+      duration: event.duration,
+      description: event.description
+    });
+    setShowModal(true);
   };
 
   // Fetch events on component mount
@@ -135,17 +160,17 @@ const EventsHome: React.FC = () => {
               key={event.id}
               event={event}
               onDelete={handleDeleteEvent}
+              onEdit={handleEditClick}
             />
           ))
         )}
       </div>
       
-      {/*showModal and below is the pop out add event when add event button is clicked */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <h2>Add Event</h2>
-            <form onSubmit={handleAddEvent}>
+            <h2>{editingEvent ? 'Edit Event' : 'Add Event'}</h2>
+            <form onSubmit={handleFormSubmit}>
               <label>
                 Event Name:
                 <input 
@@ -188,8 +213,12 @@ const EventsHome: React.FC = () => {
                 />
               </label>
               <div style={{ marginTop: '1em', display: 'flex', gap: '1em' }}>
-                <button type="submit" className="event-card-edit">Add</button>
-                <button type="button" className="event-card-delete" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="event-card-edit">
+                  {editingEvent ? 'Update' : 'Add'}
+                </button>
+                <button type="button" className="event-card-delete" onClick={closeModal}>
+                  Cancel
+                </button>
               </div>
             </form>
           </div>
@@ -200,4 +229,3 @@ const EventsHome: React.FC = () => {
 };
 
 export default EventsHome;
-

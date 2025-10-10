@@ -3,21 +3,11 @@ import { prisma } from '../config/database.js';
 
 const router = express.Router();
 
-//CRUD
-// GET /api/events - Get all events
-router.get('/', async (req, res) => {
-  try {
-    const events = await prisma.event.findMany({
-      orderBy: { date: 'desc' }
-    });
-    res.json(events);
-  } catch (error) {
-    console.error('Error fetching events:', error);
-    res.status(500).json({ error: 'Failed to fetch events' });
-  }
-});
+//CRUD for eventsHome page
+// GET /api/events to get all of the events
 
-// POST /api/events - Create new event
+
+// POST /api/events to create a new event
 router.post('/', async (req, res) => {
   const { name, date, duration, description } = req.body;
   
@@ -37,11 +27,11 @@ router.post('/', async (req, res) => {
     res.status(201).json(event);
   } catch (error) {
     console.error('Error creating event:', error);
-    res.status(500).json({ error: 'Failed to create event' });
+    res.status(500).json({ error: 'Failed to create event, error in events.ts post api' });
   }
 });
 
-// GET /api/events/:id - Get single event
+// GET /api/events/:id to get single event
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   
@@ -61,7 +51,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// PUT /api/events/:id - Update event
+// PUT /api/events/:id to Update event
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { name, date, duration, description } = req.body;
@@ -83,7 +73,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/events/:id - Delete event
+// DELETE /api/events/:id to delete event
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   
