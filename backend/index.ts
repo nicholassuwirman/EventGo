@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import eventsRouter from './routes/events';
 import participantsRouter from './routes/participants';
+import tagsRouter from './routes/tags';
 
 const app = express();
 const PORT = 4000;
@@ -16,6 +17,7 @@ app.get('/health', (_req, res) => {
 // Use modular routers
 app.use('/api/events', eventsRouter);
 app.use('/api/participants', participantsRouter);
+app.use('/api/tags', tagsRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

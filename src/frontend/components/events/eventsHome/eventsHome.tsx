@@ -22,10 +22,10 @@ const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => (
   <div className="event-card">
     <div className="event-card-details">
       <h3 className="event-card-title">{event.name}</h3>
-      <p className="event-card-date">Date: {event.date}</p>
+      <p className="event-card-date">Date: {new Date(event.date).toLocaleDateString()}</p>
       <p className="event-card-duration">Duration: {event.duration}</p>
-      <p className="event-card-duration">Description: {event.description}</p>
       <p className="event-card-duration">Place: {event.place}</p>
+      <p className="event-card-duration">Description: {event.description}</p>
       <div className="event-card-actions">
         <button className="event-card-edit" onClick={() => onEdit(event)}>Edit</button>
         <button className="event-card-delete" onClick={() => onDelete(event.id)}>Delete</button>
