@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import './eventsHome.css';
 import TagsHome from '../tags/tagsHome';
 
+type Tag = {
+  id: number;
+  name: string;
+  color: string;
+};
+
 type Event = {
   id: number;
   name: string;
@@ -9,6 +15,7 @@ type Event = {
   duration: string;
   description: string;
   place: string;
+  tags?: Tag[];
 };
 
 type EventCardProps = {
@@ -26,6 +33,31 @@ const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => (
       <p className="event-card-duration">Duration: {event.duration}</p>
       <p className="event-card-duration">Place: {event.place}</p>
       <p className="event-card-duration">Description: {event.description}</p>
+      
+      {/* Display event tags */}
+      {event.tags && event.tags.length > 0 && (
+        <div className="event-tags" style={{ marginTop: '8px' }}>
+          <span style={{ fontSize: '0.9em', fontWeight: 'bold' }}>Tags: </span>
+          {event.tags.map(tag => (
+            <span 
+              key={tag.id} 
+              className="event-tag" 
+              style={{ 
+                backgroundColor: tag.color, 
+                color: '#fff',
+                padding: '3px 8px',
+                borderRadius: '12px',
+                fontSize: '0.8em',
+                marginRight: '4px',
+                display: 'inline-block'
+              }}
+            >
+              {tag.name}
+            </span>
+          ))}
+        </div>
+      )}
+      
       <div className="event-card-actions">
         <button className="event-card-edit" onClick={() => onEdit(event)}>Edit</button>
         <button className="event-card-delete" onClick={() => onDelete(event.id)}>Delete</button>
@@ -37,15 +69,18 @@ const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => (
 const EventsHome: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     date: '',
     duration: '',
     description: '',
-    place: ''
+    place: '',
+    tagIds: [] as number[]
   });
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [filterByTag, setFilterByTag] = useState<number | null>(null);
 
   // Fetch events from backend
   const fetchEvents = async () => {
@@ -56,6 +91,30 @@ const EventsHome: React.FC = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching events:', error);
+      setLoading(false);
+    }
+  };
+
+  // Fetch tags from backend
+  const fetchTags = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/tags');
+      const data = await response.json();
+      setTags(data);
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+    }
+  };
+
+  // Fetch events by specific tag
+  const fetchEventsByTag = async (tagId: number) => {
+    try {
+      const response = await fetch(`http://localhost:4000/api/events/by-tag/${tagId}`);
+      const data = await response.json();
+      setEvents(data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching events by tag:', error);
       setLoading(false);
     }
   };
@@ -85,7 +144,7 @@ const EventsHome: React.FC = () => {
             return [...events, savedEvent];
           }
         });
-        setFormData({ name: '', date: '', duration: '', description: '' , place: ''});
+        setFormData({ name: '', date: '', duration: '', description: '' , place: '', tagIds: []});
         setShowModal(false);
         setEditingEvent(null);
       } else {
@@ -112,18 +171,27 @@ const EventsHome: React.FC = () => {
   };
 
   // Handle form input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    if (e.target.name === 'tagIds' && e.target instanceof HTMLSelectElement) {
+      const selectedOptions = Array.from(e.target.selectedOptions);
+      const selectedTagIds = selectedOptions.map(option => parseInt(option.value));
+      setFormData({
+        ...formData,
+        tagIds: selectedTagIds
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [e.target.name]: e.target.value
+      });
+    }
   };
 
   // Close modal
   const closeModal = () => {
     setShowModal(false);
     setEditingEvent(null);
-    setFormData({ name: '', date: '', duration: '', description: '', place: '' });
+    setFormData({ name: '', date: '', duration: '', description: '', place: '', tagIds: [] });
   };
 
   // Handle edit button click
@@ -134,14 +202,27 @@ const EventsHome: React.FC = () => {
       date: event.date,
       duration: event.duration,
       description: event.description,
-      place: event.place
+      place: event.place,
+      tagIds: event.tags ? event.tags.map(tag => tag.id) : []
     });
     setShowModal(true);
   };
 
-  // Fetch events on component mount
+  // Handle filter by tag
+  const handleFilterByTag = (tagId: number | null) => {
+    setFilterByTag(tagId);
+    setLoading(true);
+    if (tagId) {
+      fetchEventsByTag(tagId);
+    } else {
+      fetchEvents();
+    }
+  };
+
+  // Fetch events and tags on component mount
   useEffect(() => {
     fetchEvents();
+    fetchTags();
   }, []);
 
   return (
@@ -150,12 +231,33 @@ const EventsHome: React.FC = () => {
 
       <div className="events-home-header">
         <h1>Events</h1>
-        <button
-          className="events-home-add-btn"
-          onClick={() => setShowModal(true)}
-        >
-          + Add Event
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
+          {/* Filter by tag dropdown */}
+          <select 
+            value={filterByTag || ''} 
+            onChange={e => handleFilterByTag(e.target.value ? parseInt(e.target.value) : null)}
+            style={{ 
+              padding: '0.5em', 
+              borderRadius: '8px', 
+              border: '1px solid #ccc',
+              fontSize: '1rem'
+            }}
+          >
+            <option value="">🏷️ All Events</option>
+            {tags.map(tag => (
+              <option key={tag.id} value={tag.id}>
+                📌 {tag.name}
+              </option>
+            ))}
+          </select>
+          
+          <button
+            className="events-home-add-btn"
+            onClick={() => setShowModal(true)}
+          >
+            + Add Event
+          </button>
+        </div>
       </div>
       <div className="events-list">
         {loading ? (
@@ -230,6 +332,32 @@ const EventsHome: React.FC = () => {
                   value={formData.description}
                   onChange={handleInputChange}
                 />
+              </label>
+              <label>
+                Tags (hold Ctrl/Cmd to select multiple):
+                <select
+                  name="tagIds"
+                  multiple
+                  value={formData.tagIds.map(String)}
+                  onChange={handleInputChange}
+                  style={{ 
+                    height: '120px', 
+                    width: '100%', 
+                    padding: '0.5em',
+                    border: '1px solid #ccc',
+                    borderRadius: '8px',
+                    fontSize: '1rem'
+                  }}
+                >
+                  {tags.map(tag => (
+                    <option key={tag.id} value={tag.id}>
+                      {tag.name}
+                    </option>
+                  ))}
+                </select>
+                <small style={{ color: '#666', fontSize: '0.8em' }}>
+                  Hold Ctrl (Windows) or Cmd (Mac) to select multiple tags
+                </small>
               </label>
               <div style={{ marginTop: '1em', display: 'flex', gap: '1em' }}>
                 <button type="submit" className="event-card-edit">

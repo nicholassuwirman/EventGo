@@ -154,3 +154,49 @@
     resize: vertical;
     font-family: inherit;
 }
+
+.event-tags {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.event-tag {
+  display: inline-block;
+  padding: 3px 8px;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+  color: white;
+}
+
+.tag-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+
+.tag-filter-select {
+  padding: 0.5em;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+}
+
+.tag-select-multiple {
+  height: 120px;
+  width: 100%;
+  padding: 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.tag-select-help {
+  color: #666;
+  font-size: 0.8em;
+  margin-top: 4px;
+}

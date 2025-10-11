@@ -16,6 +16,8 @@ model Event {
   place       String
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  tags        EventTag[]
 
   @@map("events")
 }
@@ -30,4 +32,19 @@ model Tag {
   id         Int      @id @default(autoincrement())
   name       String
   color      String
+  
+  // Many-to-many relationship with Events
+  events     EventTag[]
+}
+
+model EventTag {
+  id      Int   @id @default(autoincrement())
+  eventId Int   @map("event_id")
+  tagId   Int   @map("tag_id")
+  
+  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tag     Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@unique([eventId, tagId])
+  @@map("event_tags")
 }
