@@ -243,10 +243,10 @@ const EventsHome: React.FC = () => {
               fontSize: '1rem'
             }}
           >
-            <option value="">🏷️ All Events</option>
+            <option value="">All Events</option>
             {tags.map(tag => (
               <option key={tag.id} value={tag.id}>
-                📌 {tag.name}
+                {tag.name}
               </option>
             ))}
           </select>
