@@ -25,3 +25,9 @@ model Participant {
   name       String
   age        Int
 }
+
+model Tag {
+  id         Int      @id @default(autoincrement())
+  name       String
+  color      String
+}

@@ -53,7 +53,7 @@
     object-fit: cover;
     border-radius: 16px;
     margin-right: 2vw;
-    background: #eee;
+    background: var(--gray);
 }
 
 .event-card-details {
@@ -98,7 +98,7 @@
 }
 
 .event-card-delete {
-    background: #eee;
+    background: var(--gray);
     color: #d33;
 }
 .event-card-delete:hover {

@@ -13,11 +13,11 @@ const Navbar: React.FC = () => {
                 <Link to="/eventsHome" className='navbar-links'>
                     Events
                 </Link>
-                <Link to="/tags" className='navbar-links'>
-                    Tags
-                </Link>
                 <Link to="/participantsHome" className='navbar-links'>
                     Participants
+                </Link>
+                <Link to="/" className='navbar-links'>
+                    Overview
                 </Link>
             </div>
            

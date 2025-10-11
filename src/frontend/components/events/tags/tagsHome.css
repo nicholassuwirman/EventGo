@@ -1,0 +1,96 @@
+.tags-home-container {
+  margin-bottom: 2vh;
+  padding-bottom: 2vh;
+}
+
+.tags-home-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5vh;
+}
+
+.tags-home-add-btn {
+  background: var(--orange);
+  color: #fff;
+  padding: 0.4em 1.1em;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: background 0.18s;
+  cursor: pointer;
+}
+.tags-home-add-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.tags-list {
+  display: flex;
+  gap: 2vw;
+  flex-wrap: wrap;
+}
+
+.tag-card {
+  display: flex;
+  align-items: center;
+  border: 2px solid;
+  border-radius: 16px;
+  background: #fff;
+  padding: 0.8em 1.2em;
+  min-width: 160px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-bottom: 1vh;
+}
+
+.tag-color-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin-right: 0.8em;
+  border: 2px solid var(--gray);
+}
+
+.tag-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-right: 1em;
+}
+
+.tag-actions {
+  display: flex;
+  gap: 0.5em;
+  margin-left: auto;
+}
+
+.tag-edit-btn,
+.tag-delete-btn {
+  padding: 0.3em 0.8em;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.18s;
+}
+
+.tag-edit-btn {
+  background: var(--blue);
+  color: #fff;
+}
+.tag-edit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.tag-delete-btn {
+  background: var(--gray);
+  border-radius: 8px;
+  color: black;
+}
+.tag-delete-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

@@ -88,7 +88,7 @@ app.listen(PORT, () => {
   console.log(`Events API: http://localhost:${PORT}/api/events`);
 });
 
-//---PARTICIPANTS---
+//---PARTICIPANTS CRUD---
 // Type for participants
 interface Participant {
   id: number;

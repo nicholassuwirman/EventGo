@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './eventsHome.css';
+import TagsHome from '../tags/tagsHome';
 
 type Event = {
   id: number;
@@ -145,6 +146,8 @@ const EventsHome: React.FC = () => {
 
   return (
     <div className="events-home-container">
+      <TagsHome />
+
       <div className="events-home-header">
         <h1>Events</h1>
         <button
