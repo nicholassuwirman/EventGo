@@ -1,6 +1,6 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
-import Navbar from './frontend/components/navbar/navbar'
+import Sidebar from './frontend/components/sidebar/sidebar'
 import Home from './frontend/components/home/home'
 import EventsHome from './frontend/components/events/eventsHome/eventsHome'
 import ParticipantsHome from './frontend/components/participants/participantsHome' 
@@ -10,12 +10,12 @@ import './App.css'
 
 function AppContent() {
   const location = useLocation();
-  const showNavbar = location.pathname !== '/';
+  const showSidebar = location.pathname !== '/';
 
   return (
-    <>
-      {showNavbar && <Navbar />}
-      <main>
+    <div className="app-layout">
+      {showSidebar && <Sidebar />}
+      <main className={showSidebar ? 'main-content' : 'main-content-full'}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<Home />} />
@@ -24,7 +24,7 @@ function AppContent() {
           <Route path="/tags" element={<TagsHome />} />
         </Routes>
       </main>
-    </>
+    </div>
   );
 }
 

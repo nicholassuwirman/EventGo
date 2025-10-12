@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './eventsHome.css';
-import TagsHome from '../tags/tagsHome';
 
 type Tag = {
   id: number;
@@ -300,8 +299,6 @@ const EventsHome: React.FC = () => {
 
   return (
     <div className="events-home-container">
-      <TagsHome />
-
       <div className="events-home-header">
         <h1>Events</h1>
         {/* Search and filter bar */}
@@ -365,8 +362,10 @@ const EventsHome: React.FC = () => {
         ) : events.length === 0 ? (
           <p>No events found. Add your first event!</p>
         ) : (
-          events
-            .filter(event => {
+          (() => {
+            console.log('Rendering events:', events);
+            console.log('Current filters:', { searchTerm, searchPlace, searchStartDate, searchEndDate });
+            const filteredEvents = events.filter(event => {
               // Filter by name
               if (searchTerm && !event.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
               // Filter by place
@@ -375,15 +374,17 @@ const EventsHome: React.FC = () => {
               if (searchStartDate && new Date(event.date) < new Date(searchStartDate)) return false;
               if (searchEndDate && new Date(event.date) > new Date(searchEndDate)) return false;
               return true;
-            })
-            .map((event) => (
+            });
+            console.log('Filtered events:', filteredEvents);
+            return filteredEvents.map((event) => (
               <EventCard
                 key={event.id}
                 event={event}
                 onDelete={handleDeleteEvent}
                 onEdit={handleEditClick}
               />
-            ))
+            ));
+          })()
         )}
       </div>
       

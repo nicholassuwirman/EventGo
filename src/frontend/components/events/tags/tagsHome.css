@@ -1,6 +1,8 @@
 .tags-home-container {
   margin-bottom: 2vh;
-  padding-bottom: 2vh;
+  padding: 2rem;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
 .tags-home-header {

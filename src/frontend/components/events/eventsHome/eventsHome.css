@@ -1,8 +1,7 @@
 .events-home-container {
-    padding-top: 4vh;
-    padding-bottom: 4vh;
-    padding-left: 6vh;
-    padding-right: 6vh;
+    padding: 2rem;
+    background: #f8fafc;
+    min-height: 100vh;
 }
 
 .events-home-header {
