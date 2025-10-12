@@ -5,7 +5,7 @@ import { PrismaClient } from '@prisma/client';
 const router = Router();
 const prisma = new PrismaClient();
 
-// GET all events with their tags
+// GET all events with their tags and participants
 router.get('/', async (_req: Request, res: Response) => {
   try {
     const events = await prisma.event.findMany({
@@ -18,40 +18,75 @@ router.get('/', async (_req: Request, res: Response) => {
       }
     });
     
-    // Transform data to include tags directly on events
-    const eventsWithTags = events.map(event => ({
-      ...event,
-      date: event.date.toISOString().split('T')[0], // Format date as YYYY-MM-DD
-      tags: event.tags.map(eventTag => eventTag.tag)
-    }));
+    // Get participants for all events
+    const eventsWithTagsAndParticipants = await Promise.all(
+      events.map(async (event) => {
+        const participants = await prisma.$queryRaw`
+          SELECT p.id, p.name, p.age 
+          FROM participants p 
+          INNER JOIN event_participants ep ON p.id = ep.participant_id 
+          WHERE ep.event_id = ${event.id}
+        `;
+        
+        return {
+          id: event.id,
+          name: event.name,
+          date: event.date.toISOString().split('T')[0],
+          duration: event.duration,
+          description: event.description,
+          place: event.place,
+          tags: (event as any).tags ? (event as any).tags.map((eventTag: any) => eventTag.tag) : [],
+          participants: participants || []
+        };
+      })
+    );
     
-    res.json(eventsWithTags);
+    res.json(eventsWithTagsAndParticipants);
   } catch (error) {
     console.error('Error fetching events:', error);
     res.status(500).json({ error: 'Failed to fetch events' });
   }
 });
 
-// POST - Add an event with tags
+// POST - Add an event with tags and participants
 router.post('/', async (req: Request, res: Response) => {
-  const { name, date, duration, description, place, tagIds = [] } = req.body;
+  const { name, date, duration, description, place, tagIds = [], participantIds = [] } = req.body;
   try {
+    // Create the event first
     const newEvent = await prisma.event.create({
       data: { 
         name, 
         date: new Date(date), 
         duration, 
         description, 
-        place,
-        // Create tag associations if tagIds provided
-        ...(tagIds.length > 0 && {
-          tags: {
-            create: tagIds.map((tagId: number) => ({
-              tag: { connect: { id: tagId } }
-            }))
-          }
-        })
-      },
+        place
+      }
+    });
+
+    // Create tag associations separately
+    if (tagIds.length > 0) {
+      await Promise.all(
+        tagIds.map((tagId: number) =>
+          prisma.eventTag.create({
+            data: {
+              eventId: newEvent.id,
+              tagId: tagId
+            }
+          })
+        )
+      );
+    }
+
+    // Create participant associations separately using raw query
+    if (participantIds.length > 0) {
+      for (const participantId of participantIds) {
+        await prisma.$executeRaw`INSERT INTO event_participants (event_id, participant_id) VALUES (${newEvent.id}, ${participantId})`;
+      }
+    }
+
+    // Fetch the complete event with tags
+    const eventWithRelations = await prisma.event.findUnique({
+      where: { id: newEvent.id },
       include: {
         tags: {
           include: {
@@ -60,49 +95,82 @@ router.post('/', async (req: Request, res: Response) => {
         }
       }
     });
-    
-    // Transform response
-    const eventWithTags = {
-      ...newEvent,
-      date: newEvent.date.toISOString().split('T')[0],
-      tags: newEvent.tags.map(eventTag => eventTag.tag)
+
+    // Fetch participants separately
+    const participants = await prisma.$queryRaw`
+      SELECT p.id, p.name, p.age 
+      FROM participants p 
+      INNER JOIN event_participants ep ON p.id = ep.participant_id 
+      WHERE ep.event_id = ${newEvent.id}
+    `;
+
+    const response = {
+      id: eventWithRelations!.id,
+      name: eventWithRelations!.name,
+      date: eventWithRelations!.date.toISOString().split('T')[0],
+      duration: eventWithRelations!.duration,
+      description: eventWithRelations!.description,
+      place: eventWithRelations!.place,
+      tags: (eventWithRelations as any).tags.map((eventTag: any) => eventTag.tag),
+      participants: participants || []
     };
     
-    res.status(201).json(eventWithTags);
+    res.status(201).json(response);
   } catch (error) {
     console.error('Error creating event:', error);
     res.status(500).json({ error: 'Failed to create event' });
   }
 });
 
-// PUT - Update an event with tags
+// PUT - Update an event with tags and participants
 router.put('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name, date, duration, description, place, tagIds = [] } = req.body;
+  const { name, date, duration, description, place, tagIds = [], participantIds = [] } = req.body;
   try {
-    // First, delete existing tag associations
-    await prisma.eventTag.deleteMany({
-      where: { eventId: parseInt(id) }
-    });
-    
-    // Then update the event and create new tag associations
-    const updatedEvent = await prisma.event.update({
+    // First update the event basic info
+    await prisma.event.update({
       where: { id: parseInt(id) },
       data: { 
         name, 
         date: new Date(date), 
         duration, 
         description, 
-        place,
-        // Create new tag associations if tagIds provided
-        ...(tagIds.length > 0 && {
-          tags: {
-            create: tagIds.map((tagId: number) => ({
-              tag: { connect: { id: tagId } }
-            }))
-          }
-        })
-      },
+        place
+      }
+    });
+
+    // Delete existing tag associations and create new ones
+    await prisma.eventTag.deleteMany({
+      where: { eventId: parseInt(id) }
+    });
+    
+    if (tagIds.length > 0) {
+      await Promise.all(
+        tagIds.map((tagId: number) =>
+          prisma.eventTag.create({
+            data: {
+              eventId: parseInt(id),
+              tagId: tagId
+            }
+          })
+        )
+      );
+    }
+
+    // Delete and create participant associations using simpler approach
+    // Delete existing participant associations
+    await prisma.$executeRaw`DELETE FROM event_participants WHERE event_id = ${parseInt(id)}`;
+    
+    // Create new participant associations
+    if (participantIds.length > 0) {
+      for (const participantId of participantIds) {
+        await prisma.$executeRaw`INSERT INTO event_participants (event_id, participant_id) VALUES (${parseInt(id)}, ${participantId})`;
+      }
+    }
+
+    // Fetch the complete event with relations (reuse the same logic as GET)
+    const event = await prisma.event.findUnique({
+      where: { id: parseInt(id) },
       include: {
         tags: {
           include: {
@@ -111,18 +179,36 @@ router.put('/:id', async (req: Request, res: Response) => {
         }
       }
     });
+
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+
+    // Get participants using simpler query
+    const participants = await prisma.$queryRaw`
+      SELECT p.id, p.name, p.age 
+      FROM participants p 
+      INNER JOIN event_participants ep ON p.id = ep.participant_id 
+      WHERE ep.event_id = ${parseInt(id)}
+    `;
     
-    // Transform response
-    const eventWithTags = {
-      ...updatedEvent,
-      date: updatedEvent.date.toISOString().split('T')[0],
-      tags: updatedEvent.tags.map(eventTag => eventTag.tag)
+    // Transform response (same format as other routes)
+    const response = {
+      id: event.id,
+      name: event.name,
+      date: event.date.toISOString().split('T')[0],
+      duration: event.duration,
+      description: event.description,
+      place: event.place,
+      tags: (event as any).tags ? (event as any).tags.map((eventTag: any) => eventTag.tag) : [],
+      participants: participants || []
     };
     
-    res.json(eventWithTags);
+    res.json(response);
   } catch (error) {
     console.error('Error updating event:', error);
-    res.status(500).json({ error: 'Failed to update event' });
+    console.error('Error details:', error);
+    res.status(500).json({ error: 'Failed to update event', details: error });
   }
 });
 
@@ -140,7 +226,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// GET events by tag
+// GET events by tag (for sorting by tags)
 router.get('/by-tag/:tagId', async (req: Request, res: Response) => {
   const { tagId } = req.params;
   try {

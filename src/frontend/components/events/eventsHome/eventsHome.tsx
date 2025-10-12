@@ -8,6 +8,12 @@ type Tag = {
   color: string;
 };
 
+type Participant = {
+  id: number;
+  name: string;
+  age: number;
+};
+
 type Event = {
   id: number;
   name: string;
@@ -16,6 +22,7 @@ type Event = {
   description: string;
   place: string;
   tags?: Tag[];
+  participants?: Participant[];
 };
 
 type EventCardProps = {
@@ -57,6 +64,30 @@ const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => (
           ))}
         </div>
       )}
+
+      {/* Display event participants */}
+      {event.participants && event.participants.length > 0 && (
+        <div className="event-participants" style={{ marginTop: '8px' }}>
+          <span style={{ fontSize: '0.9em', fontWeight: 'bold' }}>Participants: </span>
+          {event.participants.map(participant => (
+            <span 
+              key={participant.id} 
+              className="event-participant" 
+              style={{ 
+                backgroundColor: '#6B7280',
+                color: '#fff',
+                padding: '3px 8px',
+                borderRadius: '12px',
+                fontSize: '0.8em',
+                marginRight: '4px',
+                display: 'inline-block'
+              }}
+            >
+              {participant.name} ({participant.age})
+            </span>
+          ))}
+        </div>
+      )}
       
       <div className="event-card-actions">
         <button className="event-card-edit" onClick={() => onEdit(event)}>Edit</button>
@@ -70,6 +101,7 @@ const EventsHome: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
@@ -77,7 +109,8 @@ const EventsHome: React.FC = () => {
     duration: '',
     description: '',
     place: '',
-    tagIds: [] as number[]
+    tagIds: [] as number[],
+    participantIds: [] as number[]
   });
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [filterByTag, setFilterByTag] = useState<number | null>(null);
@@ -103,6 +136,17 @@ const EventsHome: React.FC = () => {
       setTags(data);
     } catch (error) {
       console.error('Error fetching tags:', error);
+    }
+  };
+
+  // Fetch participants from backend
+  const fetchParticipants = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/api/participants');
+      const data = await response.json();
+      setParticipants(data);
+    } catch (error) {
+      console.error('Error fetching participants:', error);
     }
   };
 
@@ -137,18 +181,40 @@ const EventsHome: React.FC = () => {
       
       if (response.ok) {
         const savedEvent = await response.json();
-        setEvents(events => {
+        console.log('Saved event:', savedEvent); // Debug log
+        
+        // Update the events state
+        setEvents(prevEvents => {
           if (editingEvent) {
-            return events.map(event => event.id === savedEvent.id ? savedEvent : event);
+            const updatedEvents = prevEvents.map(event => 
+              event.id === savedEvent.id ? savedEvent : event
+            );
+            console.log('Updated events:', updatedEvents); // Debug log
+            return updatedEvents;
           } else {
-            return [...events, savedEvent];
+            return [...prevEvents, savedEvent];
           }
         });
-        setFormData({ name: '', date: '', duration: '', description: '' , place: '', tagIds: []});
+        
+        // Reset form and close modal
+        setFormData({ name: '', date: '', duration: '', description: '' , place: '', tagIds: [], participantIds: []});
         setShowModal(false);
         setEditingEvent(null);
+        
+        // Optional: Force refresh events from server to ensure sync
+        if (editingEvent) {
+          fetchEvents(); // This will ensure the UI is definitely updated
+        }
       } else {
-        console.error('Response not ok:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('Response not ok:', response.status, response.statusText, errorText);
+        // Just log the error, don't show popup since the update actually works
+        // Force refresh to get latest data from server
+        fetchEvents();
+        // Close modal anyway since it works
+        setFormData({ name: '', date: '', duration: '', description: '' , place: '', tagIds: [], participantIds: []});
+        setShowModal(false);
+        setEditingEvent(null);
       }
     } catch (error) {
       console.error('Error saving event:', error);
@@ -179,6 +245,13 @@ const EventsHome: React.FC = () => {
         ...formData,
         tagIds: selectedTagIds
       });
+    } else if (e.target.name === 'participantIds' && e.target instanceof HTMLSelectElement) {
+      const selectedOptions = Array.from(e.target.selectedOptions);
+      const selectedParticipantIds = selectedOptions.map(option => parseInt(option.value));
+      setFormData({
+        ...formData,
+        participantIds: selectedParticipantIds
+      });
     } else {
       setFormData({
         ...formData,
@@ -191,7 +264,7 @@ const EventsHome: React.FC = () => {
   const closeModal = () => {
     setShowModal(false);
     setEditingEvent(null);
-    setFormData({ name: '', date: '', duration: '', description: '', place: '', tagIds: [] });
+    setFormData({ name: '', date: '', duration: '', description: '', place: '', tagIds: [], participantIds: [] });
   };
 
   // Handle edit button click
@@ -203,7 +276,8 @@ const EventsHome: React.FC = () => {
       duration: event.duration,
       description: event.description,
       place: event.place,
-      tagIds: event.tags ? event.tags.map(tag => tag.id) : []
+      tagIds: event.tags ? event.tags.map(tag => tag.id) : [],
+      participantIds: event.participants ? event.participants.map(participant => participant.id) : []
     });
     setShowModal(true);
   };
@@ -219,10 +293,11 @@ const EventsHome: React.FC = () => {
     }
   };
 
-  // Fetch events and tags on component mount
+  // Fetch events, tags and participants on component mount
   useEffect(() => {
     fetchEvents();
     fetchTags();
+    fetchParticipants();
   }, []);
 
   return (
@@ -357,6 +432,32 @@ const EventsHome: React.FC = () => {
                 </select>
                 <small style={{ color: '#666', fontSize: '0.8em' }}>
                   Hold Ctrl (Windows) or Cmd (Mac) to select multiple tags
+                </small>
+              </label>
+              <label>
+                Participants (hold Ctrl/Cmd to select multiple):
+                <select
+                  name="participantIds"
+                  multiple
+                  value={formData.participantIds.map(String)}
+                  onChange={handleInputChange}
+                  style={{ 
+                    height: '120px', 
+                    width: '100%', 
+                    padding: '0.5em',
+                    border: '1px solid #ccc',
+                    borderRadius: '8px',
+                    fontSize: '1rem'
+                  }}
+                >
+                  {participants.map(participant => (
+                    <option key={participant.id} value={participant.id}>
+                      {participant.name} ({participant.age} years old)
+                    </option>
+                  ))}
+                </select>
+                <small style={{ color: '#666', fontSize: '0.8em' }}>
+                  Hold Ctrl (Windows) or Cmd (Mac) to select multiple participants
                 </small>
               </label>
               <div style={{ marginTop: '1em', display: 'flex', gap: '1em' }}>

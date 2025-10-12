@@ -17,7 +17,8 @@ model Event {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
   
-  tags        EventTag[]
+  tags         EventTag[]
+  participants EventParticipant[]
 
   @@map("events")
 }
@@ -26,6 +27,9 @@ model Participant {
   id         Int      @id @default(autoincrement())
   name       String
   age        Int
+  
+  // Many-to-many relationship with Events
+  events     EventParticipant[]
 }
 
 model Tag {
@@ -47,4 +51,16 @@ model EventTag {
   
   @@unique([eventId, tagId])
   @@map("event_tags")
+}
+
+model EventParticipant {
+  id            Int   @id @default(autoincrement())
+  eventId       Int   @map("event_id")
+  participantId Int   @map("participant_id")
+  
+  event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  
+  @@unique([eventId, participantId])
+  @@map("event_participants")
 }

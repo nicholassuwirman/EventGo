@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import './participantsHome.css';
 
+type Event = {
+  id: number;
+  name: string;
+  date: string;
+  duration: string;
+  description: string;
+  place: string;
+};
+
 type Participant = {
   id: number;
   name: string;
   age: number;
+  events?: Event[];
 };
 
 type ParticipantsCardProps = {
@@ -15,7 +25,6 @@ type ParticipantsCardProps = {
 
 const ParticipantsHome: React.FC = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
   const [formData, setFormData] = useState({ name: '', age: '' });
   const [showModal, setShowModal] = useState(false);
   const [editingParticipant, setEditingParticipant] = useState<Participant | null>(null);
@@ -117,6 +126,31 @@ const ParticipantsHome: React.FC = () => {
             <div className="event-card-details">
               <h3 className="event-card-title">{participant.name}</h3>
               <p className="event-card-date">Age: {participant.age}</p>
+              
+              {/* Display participant events */}
+              {participant.events && participant.events.length > 0 && (
+                <div className="participant-events" style={{ marginTop: '8px' }}>
+                  <span style={{ fontSize: '0.9em', fontWeight: 'bold' }}>Events: </span>
+                  {participant.events.map(event => (
+                    <span 
+                      key={event.id} 
+                      className="participant-event" 
+                      style={{ 
+                        backgroundColor: '#3B82F6',
+                        color: '#fff',
+                        padding: '3px 8px',
+                        borderRadius: '12px',
+                        fontSize: '0.8em',
+                        marginRight: '4px',
+                        display: 'inline-block'
+                      }}
+                    >
+                      {event.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+              
               <div className="event-card-actions">
                 <button className="event-card-edit" onClick={() => handleEditParticipant(participant)}>Edit</button>
                 <button className="event-card-delete" onClick={() => handleDeleteParticipant(participant.id)}>Delete</button>

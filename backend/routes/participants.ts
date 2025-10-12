@@ -18,12 +18,37 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-// Get all participants from database
+// Get all participants from database with their events
 router.get('/', async (_req: Request, res: Response) => {
   try {
+    // Get all participants
     const participants = await prisma.participant.findMany();
-    res.json(participants);
+    
+    // Get events for each participant
+    const participantsWithEvents = await Promise.all(
+      participants.map(async (participant) => {
+        const events = await prisma.$queryRaw`
+          SELECT e.id, e.name, e.date, e.duration, e.description, e.place
+          FROM events e
+          INNER JOIN event_participants ep ON e.id = ep.event_id
+          WHERE ep.participant_id = ${participant.id}
+        `;
+        
+        return {
+          id: participant.id,
+          name: participant.name,
+          age: participant.age,
+          events: (events as any[]).map(event => ({
+            ...event,
+            date: event.date ? event.date.toISOString().split('T')[0] : event.date
+          }))
+        };
+      })
+    );
+    
+    res.json(participantsWithEvents);
   } catch (error) {
+    console.error('Error fetching participants:', error);
     res.status(500).json({ error: 'Failed to fetch participants' });
   }
 });
@@ -41,7 +66,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// Edit a participant in database
+//  PUT to update a participant
 router.put('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, age } = req.body;
