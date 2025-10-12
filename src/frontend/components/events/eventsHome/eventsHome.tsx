@@ -98,6 +98,11 @@ const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => (
 );
 
 const EventsHome: React.FC = () => {
+  // Search/filter state
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchPlace, setSearchPlace] = useState('');
+  const [searchStartDate, setSearchStartDate] = useState('');
+  const [searchEndDate, setSearchEndDate] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -205,8 +210,6 @@ const EventsHome: React.FC = () => {
       } else {
         const errorText = await response.text();
         console.error('Response not ok:', response.status, response.statusText, errorText);
-        // Just log the error, don't show popup since the update actually works
-        // Don't refetch events to maintain order - just close modal
         setFormData({ name: '', date: '', duration: '', description: '' , place: '', tagIds: [], participantIds: []});
         setShowModal(false);
         setEditingEvent(null);
@@ -301,32 +304,59 @@ const EventsHome: React.FC = () => {
 
       <div className="events-home-header">
         <h1>Events</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
-          {/* Filter by tag dropdown */}
-          <select 
-            value={filterByTag || ''} 
-            onChange={e => handleFilterByTag(e.target.value ? parseInt(e.target.value) : null)}
-            style={{ 
-              padding: '0.5em', 
-              borderRadius: '8px', 
-              border: '1px solid #ccc',
-              fontSize: '1rem'
-            }}
-          >
-            <option value="">All Events</option>
-            {tags.map(tag => (
-              <option key={tag.id} value={tag.id}>
-                {tag.name}
-              </option>
-            ))}
-          </select>
-          
-          <button
-            className="events-home-add-btn"
-            onClick={() => setShowModal(true)}
-          >
-            + Add Event
-          </button>
+        {/* Search and filter bar */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', marginBottom: '1em', marginTop: '1em' }}>
+          <div style={{ display: 'flex', gap: '1em', alignItems: 'center' }}>
+            <input
+              type="text"
+              placeholder="Search by name..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              style={{ padding: '0.5em', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem', width: '180px' }}
+            />
+            <input
+              type="text"
+              placeholder="Search by place..."
+              value={searchPlace}
+              onChange={e => setSearchPlace(e.target.value)}
+              style={{ padding: '0.5em', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem', width: '180px' }}
+            />
+            <input
+              type="date"
+              placeholder="Start date"
+              value={searchStartDate}
+              onChange={e => setSearchStartDate(e.target.value)}
+              style={{ padding: '0.5em', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem', width: '140px' }}
+            />
+            <input
+              type="date"
+              placeholder="End date"
+              value={searchEndDate}
+              onChange={e => setSearchEndDate(e.target.value)}
+              style={{ padding: '0.5em', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem', width: '140px' }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
+            {/* Filter by tag dropdown */}
+            <select 
+              value={filterByTag || ''} 
+              onChange={e => handleFilterByTag(e.target.value ? parseInt(e.target.value) : null)}
+              style={{ padding: '0.5em', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem' }}
+            >
+              <option value="">All Events</option>
+              {tags.map(tag => (
+                <option key={tag.id} value={tag.id}>
+                  {tag.name}
+                </option>
+              ))}
+            </select>
+            <button
+              className="events-home-add-btn"
+              onClick={() => setShowModal(true)}
+            >
+              + Add Event
+            </button>
+          </div>
         </div>
       </div>
       <div className="events-list">
@@ -335,14 +365,25 @@ const EventsHome: React.FC = () => {
         ) : events.length === 0 ? (
           <p>No events found. Add your first event!</p>
         ) : (
-          events.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              onDelete={handleDeleteEvent}
-              onEdit={handleEditClick}
-            />
-          ))
+          events
+            .filter(event => {
+              // Filter by name
+              if (searchTerm && !event.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+              // Filter by place
+              if (searchPlace && !event.place.toLowerCase().includes(searchPlace.toLowerCase())) return false;
+              // Filter by date range
+              if (searchStartDate && new Date(event.date) < new Date(searchStartDate)) return false;
+              if (searchEndDate && new Date(event.date) > new Date(searchEndDate)) return false;
+              return true;
+            })
+            .map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                onDelete={handleDeleteEvent}
+                onEdit={handleEditClick}
+              />
+            ))
         )}
       </div>
       

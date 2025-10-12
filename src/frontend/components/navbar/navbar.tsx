@@ -22,13 +22,6 @@ const Navbar: React.FC = () => {
             </div>
            
 
-            <div className="navbar-search">
-                <input
-                    type="text"
-                    placeholder="Search events..."
-                    className="navbar-search-input"
-                />
-            </div>
             
             
         </nav>
