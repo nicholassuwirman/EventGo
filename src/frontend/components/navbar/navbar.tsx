@@ -5,7 +5,7 @@ import './navbar.css';
 const Navbar: React.FC = () => {
     return (
         <nav className='navbar-container'>
-            <Link to="/" className='event-go-text'>
+            <Link to="/home" className='event-go-text'>
                 EventGo
             </Link>
 
