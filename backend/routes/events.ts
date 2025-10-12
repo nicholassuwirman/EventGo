@@ -15,7 +15,8 @@ router.get('/', async (_req: Request, res: Response) => {
             tag: true
           }
         }
-      }
+      },
+      orderBy: { id: 'asc' }
     });
     
     // Get participants for all events

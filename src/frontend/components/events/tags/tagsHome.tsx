@@ -178,8 +178,8 @@ const TagsHome: React.FC = () => {
 
       {/* Add/Edit Tag Modal */}
       {showModal && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal-content">
             <h2>{editingTag ? 'Edit Tag' : 'Add Tag'}</h2>
             <form onSubmit={handleFormSubmit}>
               <label>

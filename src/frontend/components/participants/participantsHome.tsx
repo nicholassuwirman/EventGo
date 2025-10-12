@@ -161,12 +161,8 @@ const ParticipantsHome: React.FC = () => {
       </div>
 
       {showModal && (
-        <div className="modal-overlay" onClick={() => {
-          setShowModal(false);
-          setFormData({ name: '', age: '' });
-          setEditingParticipant(null);
-        }}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal-content">
             <h2>{editingParticipant ? 'Edit Participant' : 'Add Participant'}</h2>
             <form onSubmit={handleFormSubmit}>
               <label>

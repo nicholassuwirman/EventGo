@@ -22,7 +22,9 @@ router.post('/', async (req: Request, res: Response) => {
 router.get('/', async (_req: Request, res: Response) => {
   try {
     // Get all participants
-    const participants = await prisma.participant.findMany();
+    const participants = await prisma.participant.findMany({
+      orderBy: { id: 'asc' }
+    });
     
     // Get events for each participant
     const participantsWithEvents = await Promise.all(

@@ -201,17 +201,12 @@ const EventsHome: React.FC = () => {
         setShowModal(false);
         setEditingEvent(null);
         
-        // Optional: Force refresh events from server to ensure sync
-        if (editingEvent) {
-          fetchEvents(); // This will ensure the UI is definitely updated
-        }
+        // Don't refetch all events to maintain order - the state update above is sufficient
       } else {
         const errorText = await response.text();
         console.error('Response not ok:', response.status, response.statusText, errorText);
         // Just log the error, don't show popup since the update actually works
-        // Force refresh to get latest data from server
-        fetchEvents();
-        // Close modal anyway since it works
+        // Don't refetch events to maintain order - just close modal
         setFormData({ name: '', date: '', duration: '', description: '' , place: '', tagIds: [], participantIds: []});
         setShowModal(false);
         setEditingEvent(null);
@@ -353,8 +348,8 @@ const EventsHome: React.FC = () => {
       
       {/* ab this is the pop out edit event window */}
       {showModal && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay">
+          <div className="modal-content">
             <h2>{editingEvent ? 'Edit Event' : 'Add Event'}</h2>
             <form onSubmit={handleFormSubmit}>
               <label>

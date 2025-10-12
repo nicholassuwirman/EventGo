@@ -26,7 +26,9 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.get('/', async (_req: Request, res: Response) => {
     try {
-        const tags = await prisma.tag.findMany();
+        const tags = await prisma.tag.findMany({
+            orderBy: { id: 'asc' }
+        });
         res.json(tags);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch tags'});
