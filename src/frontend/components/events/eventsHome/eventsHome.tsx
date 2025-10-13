@@ -123,11 +123,18 @@ const EventsHome: React.FC = () => {
   const fetchEvents = async () => {
     try {
       const response = await fetch('http://localhost:4000/api/events');
-      const data = await response.json();
-      setEvents(data);
+      if (response.ok) {
+        const data = await response.json();
+        // Ensure data is an array
+        setEvents(Array.isArray(data) ? data : []);
+      } else {
+        console.error('Failed to fetch events:', response.status);
+        setEvents([]);
+      }
       setLoading(false);
     } catch (error) {
       console.error('Error fetching events:', error);
+      setEvents([]);
       setLoading(false);
     }
   };
@@ -158,11 +165,18 @@ const EventsHome: React.FC = () => {
   const fetchEventsByTag = async (tagId: number) => {
     try {
       const response = await fetch(`http://localhost:4000/api/events/by-tag/${tagId}`);
-      const data = await response.json();
-      setEvents(data);
+      if (response.ok) {
+        const data = await response.json();
+        // Ensure data is an array
+        setEvents(Array.isArray(data) ? data : []);
+      } else {
+        console.error('Failed to fetch events by tag:', response.status);
+        setEvents([]);
+      }
       setLoading(false);
     } catch (error) {
       console.error('Error fetching events by tag:', error);
+      setEvents([]);
       setLoading(false);
     }
   };

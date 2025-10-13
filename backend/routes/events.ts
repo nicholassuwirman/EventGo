@@ -14,33 +14,29 @@ router.get('/', async (_req: Request, res: Response) => {
           include: {
             tag: true
           }
+        },
+        participants: {
+          include: {
+            participant: true
+          }
         }
       },
       orderBy: { id: 'asc' }
     });
     
-    // Get participants for all events
-    const eventsWithTagsAndParticipants = await Promise.all(
-      events.map(async (event) => {
-        const participants = await prisma.$queryRaw`
-          SELECT p.id, p.name, p.age 
-          FROM participants p 
-          INNER JOIN event_participants ep ON p.id = ep.participant_id 
-          WHERE ep.event_id = ${event.id}
-        `;
-        
-        return {
-          id: event.id,
-          name: event.name,
-          date: event.date.toISOString().split('T')[0],
-          duration: event.duration,
-          description: event.description,
-          place: event.place,
-          tags: (event as any).tags ? (event as any).tags.map((eventTag: any) => eventTag.tag) : [],
-          participants: participants || []
-        };
-      })
-    );
+    // Transform the events to the expected format
+    const eventsWithTagsAndParticipants = events.map((event) => {
+      return {
+        id: event.id,
+        name: event.name,
+        date: event.date.toISOString().split('T')[0],
+        duration: event.duration,
+        description: event.description,
+        place: event.place,
+        tags: (event as any).tags ? (event as any).tags.map((eventTag: any) => eventTag.tag) : [],
+        participants: (event as any).participants ? (event as any).participants.map((eventParticipant: any) => eventParticipant.participant) : []
+      };
+    });
     
     res.json(eventsWithTagsAndParticipants);
   } catch (error) {
