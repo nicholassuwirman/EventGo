@@ -31,70 +31,74 @@ type EventCardProps = {
 };
 
 //this is the event card
-const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => (
-  <div className="event-card">
-    <div className="event-card-details">
-      <h3 className="event-card-title">{event.name}</h3>
-      <p className="event-card-date">Date: {new Date(event.date).toLocaleDateString()}</p>
-      <p className="event-card-duration">Duration: {event.duration}</p>
-      <p className="event-card-duration">Place: {event.place}</p>
-      <p className="event-card-duration">Description: {event.description}</p>
-      
-      {/* Display event tags */}
-      {event.tags && event.tags.length > 0 && (
-        <div className="event-tags" style={{ marginTop: '8px' }}>
-          <span style={{ fontSize: '0.9em', fontWeight: 'bold' }}>Tags: </span>
-          {event.tags.map(tag => (
-            <span 
-              key={tag.id} 
-              className="event-tag" 
-              style={{ 
-                backgroundColor: tag.color, 
-                color: '#fff',
-                padding: '3px 8px',
-                borderRadius: '12px',
-                fontSize: '0.8em',
-                marginRight: '4px',
-                display: 'inline-block'
-              }}
-            >
-              {tag.name}
-            </span>
-          ))}
-        </div>
-      )}
+const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => {
+  const [showParticipants, setShowParticipants] = useState(false);
 
-      {/* Display event participants */}
-      {event.participants && event.participants.length > 0 && (
-        <div className="event-participants" style={{ marginTop: '8px' }}>
-          <span style={{ fontSize: '0.9em', fontWeight: 'bold' }}>Participants: </span>
-          {event.participants.map(participant => (
-            <span 
-              key={participant.id} 
-              className="event-participant" 
-              style={{ 
-                backgroundColor: '#6B7280',
-                color: '#fff',
-                padding: '3px 8px',
-                borderRadius: '12px',
-                fontSize: '0.8em',
-                marginRight: '4px',
-                display: 'inline-block'
-              }}
+  return (
+    <div className="event-card">
+      <div className="event-card-details">
+        <h3 className="event-card-title">{event.name}</h3>
+        <p className="event-card-date">Date: {new Date(event.date).toLocaleDateString()}</p>
+        <p className="event-card-duration">Duration: {event.duration}</p>
+        <p className="event-card-duration">Place: {event.place}</p>
+        <p className="event-card-duration">Description: {event.description}</p>
+        
+        {/* Display event tags */}
+        {event.tags && event.tags.length > 0 && (
+          <div className="event-tags">
+            <span className="event-tags-label">Tags: </span>
+            {event.tags.map(tag => (
+              <span 
+                key={tag.id} 
+                className="event-tag"
+                style={{ backgroundColor: tag.color }}
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Show participants button */}
+        {event.participants && event.participants.length > 0 && (
+          <div className="event-participants-section">
+            <button 
+              className="show-participants-btn"
+              onClick={() => setShowParticipants(true)}
             >
-              {participant.name} ({participant.age})
-            </span>
-          ))}
+              Show Participants ({event.participants.length})
+            </button>
+          </div>
+        )}
+        
+        <div className="event-card-actions">
+          <button className="event-card-edit" onClick={() => onEdit(event)}>Edit</button>
+          <button className="event-card-delete" onClick={() => onDelete(event.id)}>Delete</button>
+        </div>
+      </div>
+
+      {/* Participants Modal */}
+      {showParticipants && (
+        <div className="participants-modal-overlay" onClick={() => setShowParticipants(false)}>
+          <div className="participants-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="participants-modal-header">
+              <h3>Participants - {event.name}</h3>
+              <button className="participants-modal-close" onClick={() => setShowParticipants(false)}>×</button>
+            </div>
+            <div className="participants-modal-list">
+              {event.participants?.map(participant => (
+                <div key={participant.id} className="participant-item">
+                  <span className="participant-name">{participant.name}</span>
+                  <span className="participant-age">{participant.age} years old</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
-      
-      <div className="event-card-actions">
-        <button className="event-card-edit" onClick={() => onEdit(event)}>Edit</button>
-        <button className="event-card-delete" onClick={() => onDelete(event.id)}>Delete</button>
-      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const EventsHome: React.FC = () => {
   // Search/filter state
@@ -214,6 +218,9 @@ const EventsHome: React.FC = () => {
           }
         });
         
+        // Signal that events were updated for dashboard refresh
+        localStorage.setItem('eventsUpdated', Date.now().toString());
+        
         // Reset form and close modal
         setFormData({ name: '', date: '', duration: '', description: '' , place: '', tagIds: [], participantIds: []});
         setShowModal(false);
@@ -241,6 +248,8 @@ const EventsHome: React.FC = () => {
       
       if (response.ok) {
         setEvents(events.filter(event => event.id !== id));
+        // Signal that events were updated for dashboard refresh
+        localStorage.setItem('eventsUpdated', Date.now().toString());
       }
     } catch (error) {
       console.error('Error deleting event:', error);
@@ -316,7 +325,7 @@ const EventsHome: React.FC = () => {
       <div className="events-home-header">
         <h1>Events</h1>
         {/* Search and filter bar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5em', marginBottom: '1em', marginTop: '1em' }}>
+        <div className='events-home-bar' >
           <div style={{ display: 'flex', gap: '1em', alignItems: 'center' }}>
             <input
               type="text"
@@ -346,8 +355,6 @@ const EventsHome: React.FC = () => {
               onChange={e => setSearchEndDate(e.target.value)}
               style={{ padding: '0.5em', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem', width: '140px' }}
             />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1em' }}>
             {/* Filter by tag dropdown */}
             <select 
               value={filterByTag || ''} 

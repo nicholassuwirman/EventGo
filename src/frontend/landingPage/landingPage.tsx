@@ -18,7 +18,7 @@ const LandingPage: React.FC = () => {
                             Plan events, manage participants, and create custom tags, all in one place. Our mission is to bring the fun back to event planning, without the hassle.
                         </p>
                         <a href="/home" className="landing-plan-btn">
-                            PLAN YOUR EVENT
+                            PLAN YOUR NEXT EVENT
                         </a>
                     </div>
                 </div>

@@ -28,6 +28,8 @@ const ParticipantsHome: React.FC = () => {
   const [formData, setFormData] = useState({ name: '', age: '' });
   const [showModal, setShowModal] = useState(false);
   const [editingParticipant, setEditingParticipant] = useState<Participant | null>(null);
+  const [showEventsModal, setShowEventsModal] = useState(false);
+  const [selectedParticipantEvents, setSelectedParticipantEvents] = useState<{ events: Event[], participantName: string }>({ events: [], participantName: '' });
 
   //get or fetch all events
   const fetchParticipants = async () => {
@@ -127,27 +129,18 @@ const ParticipantsHome: React.FC = () => {
               <h3 className="event-card-title">{participant.name}</h3>
               <p className="event-card-date">Age: {participant.age}</p>
               
-              {/* Display participant events */}
+              {/* Show events button */}
               {participant.events && participant.events.length > 0 && (
-                <div className="participant-events" style={{ marginTop: '8px' }}>
-                  <span style={{ fontSize: '0.9em', fontWeight: 'bold' }}>Events: </span>
-                  {participant.events.map(event => (
-                    <span 
-                      key={event.id} 
-                      className="participant-event" 
-                      style={{ 
-                        backgroundColor: '#3B82F6',
-                        color: '#fff',
-                        padding: '3px 8px',
-                        borderRadius: '12px',
-                        fontSize: '0.8em',
-                        marginRight: '4px',
-                        display: 'inline-block'
-                      }}
-                    >
-                      {event.name}
-                    </span>
-                  ))}
+                <div className="participant-events-section">
+                  <button 
+                    className="show-events-btn"
+                    onClick={() => {
+                      setSelectedParticipantEvents({ events: participant.events || [], participantName: participant.name });
+                      setShowEventsModal(true);
+                    }}
+                  >
+                    Show Events ({participant.events.length})
+                  </button>
                 </div>
               )}
               
@@ -186,7 +179,7 @@ const ParticipantsHome: React.FC = () => {
                   min={0}
                 />
               </label>
-              <div style={{ marginTop: '1em', display: 'flex', gap: '1em' }}>
+              <div className="modal-form-btn-container">
                 <button type="submit" className="event-card-edit">
                   {editingParticipant ? 'Update' : 'Add'}
                 </button>
@@ -199,6 +192,29 @@ const ParticipantsHome: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Events Modal */}
+      {showEventsModal && (
+        <div className="events-modal-overlay" onClick={() => setShowEventsModal(false)}>
+          <div className="events-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="events-modal-header">
+              <h3>Events - {selectedParticipantEvents.participantName}</h3>
+              <button className="events-modal-close" onClick={() => setShowEventsModal(false)}>×</button>
+            </div>
+            <div className="events-modal-list">
+              {selectedParticipantEvents.events.map(event => (
+                <div key={event.id} className="event-item">
+                  <div className="event-item-content">
+                    <span className="event-item-name">{event.name}</span>
+                    <span className="event-item-date">{new Date(event.date).toLocaleDateString()}</span>
+                  </div>
+                  <span className="event-item-place">{event.place}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

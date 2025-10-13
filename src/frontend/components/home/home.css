@@ -165,7 +165,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
 }
 
 .view-all-link {
@@ -239,10 +238,12 @@
   gap: 1rem;
 }
 
+
+
 .recent-event-card {
   display: flex;
   align-items: center;
-  padding: 1rem;
+  padding: 0.85rem;
   background: #f7fafc;
   border-radius: 12px;
   border: 1px solid #e2e8f0;

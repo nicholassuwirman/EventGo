@@ -37,7 +37,7 @@
 .event-card {
     display: flex;
     background: #fff;
-    border: 2px solid var(--orange);
+    border: 2px solid var(--blue);
     border-radius: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     padding: 1.2em;
@@ -97,8 +97,8 @@
 }
 
 .event-card-delete {
-    background: var(--gray);
-    color: #d33;
+    color: var(--orange);
+    border: 1px solid var(--orange);
 }
 .event-card-delete:hover {
     background: #ffd6d6;
@@ -116,11 +116,13 @@
 
 .modal-content {
     background: #fff;
-    padding: 2em 2.5em;
+    padding: 1em 1.5em;
     border-radius: 18px;
     box-shadow: 0 8px 32px rgba(0,0,0,0.18);
     min-width: 320px;
     max-width: 90vw;
+    max-height: 85vh;
+    overflow-y: auto;
 }
 
 .modal-content h2 {
@@ -159,15 +161,20 @@
   margin-bottom: 8px;
 }
 
-.event-tag {
-  display: inline-block;
-  padding: 3px 8px;
+.event-tags-label {
+  font-size: 0.9em;
+  font-weight: bold;
   margin-right: 4px;
-  margin-bottom: 4px;
-  border-radius: 12px;
+}
+
+/* Tag pill */
+.event-tag {
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 6px;
   font-size: 0.8em;
-  font-weight: 500;
-  color: white;
+  margin-right: 4px;
+  display: inline-block;
 }
 
 .tag-filter-container {
@@ -198,4 +205,151 @@
   color: #666;
   font-size: 0.8em;
   margin-top: 4px;
+}
+
+.events-home-bar {
+    display: 'flex';
+    flex-direction: 'column';
+    gap: '0.5em';
+    margin-bottom: '1em';
+    margin-top: '1em';
+}
+
+/* Participants label */
+.event-participants-label {
+  font-size: 0.9em;
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+/* Participant pill */
+.event-participant {
+    color: black;
+    border: 1px solid var(--blue);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.8em;
+  margin-right: 4px;
+  display: inline-block;
+}
+
+/* Participants section */
+.event-participants-section {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+/* Show participants button */
+.show-participants-btn {
+  background: var(--blue);
+  color: #fff;
+  padding: 0.6em 1em;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.18s;
+}
+
+.show-participants-btn:hover {
+  background: #0033bb;
+}
+
+/* Participants Modal */
+.participants-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+}
+
+.participants-modal-content {
+  background: #fff;
+  padding: 1.5em;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  width: 480px;
+  max-width: 90vw;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.participants-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8em;
+  border-bottom: 1px solid var(--gray);
+  padding-bottom: 0.5em;
+}
+
+.participants-modal-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #222;
+}
+
+.participants-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.18s;
+}
+
+.participants-modal-close:hover {
+  background: var(--gray);
+  color: #222;
+}
+
+.participants-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.participant-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5em 0.6em;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  transition: background 0.18s;
+}
+
+.participant-item:hover {
+  background: #f1f5f9;
+}
+
+.participant-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #222;
+}
+
+.participant-age {
+  font-size: 0.8rem;
+  color: #666;
+  background: var(--gray);
+  padding: 0.2em 0.5em;
+  border-radius: 8px;
 }

@@ -2,6 +2,8 @@
     height: 100vh;
     width: 100vw;
     background-color: var(--orange);
+    display: flex;
+    flex-direction: column;
 }
 
 .landing-container-up {
@@ -48,12 +50,13 @@
 
 .landing-container-up-text-container {
     padding-left: 6vw;
-    padding-top: 20vh;
+    padding-top: 8vh;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
 }
 
-.landing-container-up-text-container {
-    display: flex;
-}
+
 
 .landing-container-up-text-container-left {
     width: 40%;
@@ -62,7 +65,6 @@
 
 .landing-container-up-text-container-right {
     width: 40%;
-    height: 100%;
     display: flex;
     flex-direction: column;
 }
@@ -73,7 +75,6 @@
 
 .landing-text-2 {
     font-size: 1.2rem;
-    padding-top: 2vh;
 }
 
 .landing-plan-btn {
@@ -96,16 +97,70 @@
     background: #222;
     color: #fff;
 }
+/* Laptop screens (15" and similar) */
+@media (max-width: 1600px) and (min-height: 700px) {
+  .landing-container-up {
+    height: 50vh;
+  }
 
+  .landing-container-up-text-container {
+    padding-top: 6vh;
+  }
+
+  .landing-text-1 {
+    font-size: 2.8rem;
+    line-height: 1.1;
+  }
+
+  .landing-text-2 {
+    font-size: 1.1rem;
+  }
+
+  .landing-container-below {
+    height: 50vh;
+  }
+}
+
+/* Smaller laptop screens with lower height */
+@media (max-width: 1600px) and (max-height: 800px) {
+  .landing-container-up {
+    height: 50vh;
+  }
+
+  .landing-container-up-text-container {
+    padding-top: 3vh;
+  }
+
+  .landing-text-1 {
+    font-size: 3rem;
+    line-height: 1.1;
+  }
+
+  .landing-text-2 {
+    font-size: 1.2rem;
+  }
+
+  .landing-container-below {
+    height: 50vh;
+  }
+}
+
+
+/* Mobile and tablet screens */
 @media (max-width: 900px) {
   .landing-container {
     padding-right: 2vw;
     padding-top: 2vh;
   }
+
+  .landing-container-up {
+    height: 50vh;
+  }
+
   .landing-container-up-text-container {
     flex-direction: column;
     padding-left: 4vw;
-    padding-top: 8vh;
+    padding-top: 4vh;
     gap: 2vh;
   }
 
@@ -126,20 +181,12 @@
   }
 
   .landing-plan-btn {
-    display: inline-block;
-    border: 2px solid #222;
-    background: transparent;
-    color: #222;
-    font-weight: 700;
-    font-size: 1.1rem;           
-    border-radius: 4px;
-    text-decoration: none;
-    transition: background 0.18s, color 0.18s;
-    cursor: pointer;
-    text-align: center;
-    margin-top: 1em;
-    padding: 1em 2.5em;         
-}
+    font-size: 1.1rem;
+  }
+
+  .landing-container-below {
+    height: 50vh;
+  }
 }
 
 

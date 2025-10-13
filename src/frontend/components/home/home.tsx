@@ -57,53 +57,91 @@ const Home: React.FC = () => {
     totalTags: 0,
     upcomingEvents: 0
   });
-  const [recentEvents, setRecentEvents] = useState([]);
+  const [recentEvents, setRecentEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch events
+      const eventsResponse = await fetch('http://localhost:4000/api/events');
+      const eventsData = await eventsResponse.json();
+      const events = Array.isArray(eventsData) ? eventsData : [];
+      
+      // Fetch participants
+      const participantsResponse = await fetch('http://localhost:4000/api/participants');
+      const participantsData = await participantsResponse.json();
+      const participants = Array.isArray(participantsData) ? participantsData : [];
+      
+      // Fetch tags
+      const tagsResponse = await fetch('http://localhost:4000/api/tags');
+      const tagsData = await tagsResponse.json();
+      const tags = Array.isArray(tagsData) ? tagsData : [];
+
+      // Calculate events this month
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      const eventsThisMonth = events.filter((event: any) => {
+        const eventDate = new Date(event.date);
+        return eventDate.getMonth() === currentMonth && eventDate.getFullYear() === currentYear;
+      });
+
+      setStats({
+        totalEvents: events.length,
+        totalParticipants: participants.length,
+        totalTags: tags.length,
+        upcomingEvents: eventsThisMonth.length
+      });
+
+      // Get closest events to today (3 closest to current date)
+      const today = new Date();
+      const sortedEvents = events
+        .sort((a: any, b: any) => {
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+          const diffA = Math.abs(today.getTime() - dateA.getTime());
+          const diffB = Math.abs(today.getTime() - dateB.getTime());
+          return diffA - diffB;
+        })
+        .slice(0, 3);
+      setRecentEvents(sortedEvents);
+      
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        // Fetch events
-        const eventsResponse = await fetch('http://localhost:4000/api/events');
-        const events = await eventsResponse.json();
-        
-        // Fetch participants
-        const participantsResponse = await fetch('http://localhost:4000/api/participants');
-        const participants = await participantsResponse.json();
-        
-        // Fetch tags
-        const tagsResponse = await fetch('http://localhost:4000/api/tags');
-        const tags = await tagsResponse.json();
+    fetchDashboardData();
+  }, []);
 
-        // Calculate upcoming events (next 30 days)
-        const now = new Date();
-        const thirtyDaysFromNow = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000));
-        const upcoming = events.filter((event: any) => {
-          const eventDate = new Date(event.date);
-          return eventDate >= now && eventDate <= thirtyDaysFromNow;
-        });
-
-        setStats({
-          totalEvents: events.length,
-          totalParticipants: participants.length,
-          totalTags: tags.length,
-          upcomingEvents: upcoming.length
-        });
-
-        // Get recent events (last 5)
-        const sortedEvents = events
-          .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
-          .slice(0, 5);
-        setRecentEvents(sortedEvents);
-        
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        setLoading(false);
+  // Listen for events update signal
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'eventsUpdated') {
+        fetchDashboardData();
+        // Clear the signal
+        localStorage.removeItem('eventsUpdated');
       }
     };
 
-    fetchDashboardData();
+    const handleFocus = () => {
+      // Refresh when window gains focus (in case user came back from events page)
+      if (localStorage.getItem('eventsUpdated')) {
+        fetchDashboardData();
+        localStorage.removeItem('eventsUpdated');
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   if (loading) {
@@ -142,7 +180,7 @@ const Home: React.FC = () => {
           bgColor="stat-purple"
         />
         <StatCard 
-          title="Upcoming" 
+          title="Events This Month" 
           value={stats.upcomingEvents} 
           iconSrc={dashboardLogo} 
           bgColor="stat-orange"
@@ -176,10 +214,10 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        {/* Recent Events */}
+        {/* Upcoming Events */}
         <div className="dashboard-card">
           <div className="card-header">
-            <h2 className="card-title">Recent Events</h2>
+            <h2 className="card-title">Upcoming Events</h2>
             <Link to="/eventsHome" className="view-all-link">View All</Link>
           </div>
           <div className="recent-events-list">
@@ -195,30 +233,7 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        {/* Activity Overview */}
-        <div className="dashboard-card">
-          <h2 className="card-title">Activity Overview</h2>
-          <div className="activity-summary">
-            <div className="activity-item">
-              <div className="activity-metric">
-                <span className="metric-number">{stats.totalEvents}</span>
-                <span className="metric-label">Total Events Created</span>
-              </div>
-            </div>
-            <div className="activity-item">
-              <div className="activity-metric">
-                <span className="metric-number">{stats.upcomingEvents}</span>
-                <span className="metric-label">Events This Month</span>
-              </div>
-            </div>
-            <div className="activity-item">
-              <div className="activity-metric">
-                <span className="metric-number">{Math.round(stats.totalParticipants / Math.max(stats.totalEvents, 1))}</span>
-                <span className="metric-label">Avg. Participants per Event</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        
       </div>
     </div>
   );
