@@ -5,6 +5,7 @@ import Home from './frontend/components/home/home'
 import EventsHome from './frontend/components/events/eventsHome/eventsHome'
 import ParticipantsHome from './frontend/components/participants/participantsHome' 
 import TagsHome from './frontend/components/events/tags/tagsHome'
+import MapHome from './frontend/components/map/MapHome'
 import LandingPage from './frontend/landingPage/landingPage'
 import './App.css'
 
@@ -22,6 +23,7 @@ function AppContent() {
           <Route path="/eventsHome" element={<EventsHome />} />
           <Route path="/participantsHome" element={<ParticipantsHome />} /> 
           <Route path="/tags" element={<TagsHome />} />
+          <Route path="/map" element={<MapHome />} />
         </Routes>
       </main>
     </div>

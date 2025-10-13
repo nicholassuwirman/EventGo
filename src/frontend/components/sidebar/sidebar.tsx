@@ -5,6 +5,7 @@ import dashboardLogo from '../../../assets/dashboard-logo.png';
 import eventLogo from '../../../assets/event-logo.png';
 import participantLogo from '../../../assets/participant-logo.png';
 import tagLogo from '../../../assets/tag-logo.png';
+import mapLogo from '../../../assets/map-logo.png';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
@@ -14,6 +15,7 @@ const Sidebar: React.FC = () => {
     { path: '/eventsHome', name: 'Events', icon: eventLogo },
     { path: '/participantsHome', name: 'Participants', icon: participantLogo },
     { path: '/tags', name: 'Tags', icon: tagLogo },
+    { path: '/map', name: 'Map', icon: mapLogo },
   ];
 
   return (
