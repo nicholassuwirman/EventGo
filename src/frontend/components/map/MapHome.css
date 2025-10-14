@@ -80,6 +80,25 @@
   text-align: center;
 }
 
+/* Geocoding Status */
+.geocoding-status {
+  background: #fef5e7;
+  border: 1px solid var(--orange);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-left: 1rem;
+  display: flex;
+  align-items: center;
+  min-width: 200px;
+}
+
+.geocoding-status p {
+  margin: 0;
+  color: #b7791f;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
 /* Map Container */
 .map-container {
   background: white;
@@ -224,4 +243,35 @@
   border: 2px solid white;
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Map Controls */
+.map-controls {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 1rem;
+}
+
+.clear-cache-btn {
+  background: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.clear-cache-btn:hover {
+  background: #c53030;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.clear-cache-btn:active {
+  transform: translateY(0);
 }
