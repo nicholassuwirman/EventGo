@@ -31,6 +31,17 @@ const ParticipantsHome: React.FC = () => {
   const [showEventsModal, setShowEventsModal] = useState(false);
   const [selectedParticipantEvents, setSelectedParticipantEvents] = useState<{ events: Event[], participantName: string }>({ events: [], participantName: '' });
 
+  // Function to determine if an event is upcoming or past
+  const getEventStatus = (eventDate: string): 'upcoming' | 'past' => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of today
+    
+    const eventDateTime = new Date(eventDate);
+    eventDateTime.setHours(0, 0, 0, 0); // Set to start of event date
+    
+    return eventDateTime >= today ? 'upcoming' : 'past';
+  };
+
   //get or fetch all events
   const fetchParticipants = async () => {
     try {
@@ -205,15 +216,23 @@ const ParticipantsHome: React.FC = () => {
               <button className="events-modal-close" onClick={() => setShowEventsModal(false)}>×</button>
             </div>
             <div className="events-modal-list">
-              {selectedParticipantEvents.events.map(event => (
-                <div key={event.id} className="event-item">
-                  <div className="event-item-content">
-                    <span className="event-item-name">{event.name}</span>
-                    <span className="event-item-date">{new Date(event.date).toLocaleDateString()}</span>
+              {selectedParticipantEvents.events.map(event => {
+                const eventStatus = getEventStatus(event.date);
+                return (
+                  <div key={event.id} className="event-item">
+                    <div className="event-item-content">
+                      <div className="event-item-header">
+                        <span className="event-item-name">{event.name}</span>
+                        <span className={`event-status ${eventStatus}`}>
+                          {eventStatus === 'upcoming' ? 'Upcoming' : 'Past'}
+                        </span>
+                      </div>
+                      <span className="event-item-date">{new Date(event.date).toLocaleDateString()}</span>
+                    </div>
+                    <span className="event-item-place">{event.place}</span>
                   </div>
-                  <span className="event-item-place">{event.place}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

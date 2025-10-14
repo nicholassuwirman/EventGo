@@ -132,6 +132,12 @@
 
 .event-item-content {
     display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+}
+
+.event-item-header {
+    display: flex;
     justify-content: space-between;
     align-items: center;
 }
@@ -142,12 +148,34 @@
     color: #222;
 }
 
+.event-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2em 0.6em;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.event-status.upcoming {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.event-status.past {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
 .event-item-date {
     font-size: 0.8rem;
     color: #666;
     background: var(--gray);
     padding: 0.2em 0.5em;
     border-radius: 8px;
+    align-self: flex-start;
 }
 
 .event-item-place {
