@@ -48,6 +48,14 @@ router.get('/', async (_req: Request, res: Response) => {
 // POST - Add an event with tags and participants
 router.post('/', async (req: Request, res: Response) => {
   const { name, date, duration, description, place, tagIds = [], participantIds = [] } = req.body;
+  
+  // Basic validation
+  if (!name || !date || !duration || !description || !place) {
+    return res.status(400).json({ 
+      error: 'All fields are required: name, date, duration, description, and place' 
+    });
+  }
+  
   try {
     // Create the event first
     const newEvent = await prisma.event.create({
@@ -123,6 +131,14 @@ router.post('/', async (req: Request, res: Response) => {
 router.put('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, date, duration, description, place, tagIds = [], participantIds = [] } = req.body;
+  
+  // Basic validation
+  if (!name || !date || !duration || !description || !place) {
+    return res.status(400).json({ 
+      error: 'All fields are required: name, date, duration, description, and place' 
+    });
+  }
+  
   try {
     // First update the event basic info
     await prisma.event.update({
