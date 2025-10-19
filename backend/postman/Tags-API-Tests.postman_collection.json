@@ -1,0 +1,427 @@
+{
+  "info": {
+    "name": "Tags API Test Collection",
+    "description": "Comprehensive API tests for the Tags endpoints",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Tag",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test(\"Response has required properties\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('id');",
+              "    pm.expect(responseJson).to.have.property('name');",
+              "    pm.expect(responseJson).to.have.property('color');",
+              "});",
+              "",
+              "pm.test(\"Created tag matches input data\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    const requestBody = JSON.parse(pm.request.body.raw);",
+              "    pm.expect(responseJson.name).to.eql(requestBody.name);",
+              "    pm.expect(responseJson.color).to.eql(requestBody.color);",
+              "});",
+              "",
+              "// Store the created tag ID for use in other requests",
+              "if (pm.response.code === 201) {",
+              "    const responseJson = pm.response.json();",
+              "    pm.collectionVariables.set(\"tagId\", responseJson.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Test Tag {{$randomWord}}\",\n    \"color\": \"#{{$randomHexColor}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/tags",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tags"
+          ]
+        },
+        "description": "Create a new tag with random name and color"
+      }
+    },
+    {
+      "name": "Get All Tags",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is an array\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.be.an('array');",
+              "});",
+              "",
+              "pm.test(\"Each tag has required properties\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    if (responseJson.length > 0) {",
+              "        responseJson.forEach(function(tag) {",
+              "            pm.expect(tag).to.have.property('id');",
+              "            pm.expect(tag).to.have.property('name');",
+              "            pm.expect(tag).to.have.property('color');",
+              "        });",
+              "    }",
+              "});",
+              "",
+              "pm.test(\"Tags are ordered by ID ascending\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    if (responseJson.length > 1) {",
+              "        for (let i = 1; i < responseJson.length; i++) {",
+              "            pm.expect(responseJson[i].id).to.be.greaterThan(responseJson[i-1].id);",
+              "        }",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/tags",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tags"
+          ]
+        },
+        "description": "Fetch all tags from the database"
+      }
+    },
+    {
+      "name": "Update Tag",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response has required properties\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('id');",
+              "    pm.expect(responseJson).to.have.property('name');",
+              "    pm.expect(responseJson).to.have.property('color');",
+              "});",
+              "",
+              "pm.test(\"Updated tag matches input data\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    const requestBody = JSON.parse(pm.request.body.raw);",
+              "    pm.expect(responseJson.name).to.eql(requestBody.name);",
+              "    pm.expect(responseJson.color).to.eql(requestBody.color);",
+              "});",
+              "",
+              "pm.test(\"Tag ID remains unchanged\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    const expectedId = pm.collectionVariables.get(\"tagId\");",
+              "    pm.expect(responseJson.id).to.eql(parseInt(expectedId));",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Updated Tag {{$randomWord}}\",\n    \"color\": \"#{{$randomHexColor}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/tags/{{tagId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tags",
+            "{{tagId}}"
+          ]
+        },
+        "description": "Update an existing tag"
+      }
+    },
+    {
+      "name": "Delete Tag",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response contains success message\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('message');",
+              "    pm.expect(responseJson.message).to.include('deleted successfully');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/tags/{{tagId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tags",
+            "{{tagId}}"
+          ]
+        },
+        "description": "Delete an existing tag"
+      }
+    },
+    {
+      "name": "Create Tag - Missing Fields",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 500 or 400 (depending on validation)\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([400, 500]);",
+              "});",
+              "",
+              "pm.test(\"Response contains error message\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('error');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Incomplete Tag\"\n    // Missing color field\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/tags",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tags"
+          ]
+        },
+        "description": "Test error handling for missing required fields"
+      }
+    },
+    {
+      "name": "Update Non-existent Tag",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 500\", function () {",
+              "    pm.response.to.have.status(500);",
+              "});",
+              "",
+              "pm.test(\"Response contains error message\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('error');",
+              "    pm.expect(responseJson.error).to.include('Failed to update tag');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Non-existent Tag\",\n    \"color\": \"#FF5733\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/tags/999999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tags",
+            "999999"
+          ]
+        },
+        "description": "Test error handling for updating non-existent tag"
+      }
+    },
+    {
+      "name": "Delete Non-existent Tag",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 500\", function () {",
+              "    pm.response.to.have.status(500);",
+              "});",
+              "",
+              "pm.test(\"Response contains error message\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('error');",
+              "    pm.expect(responseJson.error).to.include('Failed to delete tag');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/tags/999999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tags",
+            "999999"
+          ]
+        },
+        "description": "Test error handling for deleting non-existent tag"
+      }
+    },
+    {
+      "name": "Invalid ID Format",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 500 (due to NaN ID)\", function () {",
+              "    pm.response.to.have.status(500);",
+              "});",
+              "",
+              "pm.test(\"Response contains error message\", function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('error');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Invalid ID Test\",\n    \"color\": \"#FF5733\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/tags/invalid-id",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tags",
+            "invalid-id"
+          ]
+        },
+        "description": "Test error handling for invalid ID format"
+      }
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set base URL if not already set",
+          "if (!pm.collectionVariables.get(\"baseUrl\")) {",
+          "    pm.collectionVariables.set(\"baseUrl\", \"http://localhost:3001\");",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "tagId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

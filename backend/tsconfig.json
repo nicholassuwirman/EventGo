@@ -4,14 +4,16 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
-    "verbatimModuleSyntax": false
+    "verbatimModuleSyntax": false,
+    "types": ["node"],
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "routes/**/*", "tests/**/*", "*.ts"],
   "exclude": ["node_modules", "dist"]
 }
