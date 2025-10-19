@@ -104,7 +104,7 @@ router.post('/', async (req: Request, res: Response) => {
     // Fetch participants separately
     const participants = await prisma.$queryRaw`
       SELECT p.id, p.name, p.age 
-      FROM participants p 
+      FROM "Participant" p 
       INNER JOIN event_participants ep ON p.id = ep.participant_id 
       WHERE ep.event_id = ${newEvent.id}
     `;
@@ -200,7 +200,7 @@ router.put('/:id', async (req: Request, res: Response) => {
     // Get participants using simpler query
     const participants = await prisma.$queryRaw`
       SELECT p.id, p.name, p.age 
-      FROM participants p 
+      FROM "Participant" p 
       INNER JOIN event_participants ep ON p.id = ep.participant_id 
       WHERE ep.event_id = ${parseInt(id)}
     `;
