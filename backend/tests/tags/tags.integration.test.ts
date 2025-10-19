@@ -2,7 +2,7 @@
 import request from 'supertest';
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
-import tagsRouter from '../routes/tags';
+import tagsRouter from '../../routes/tags';
 
 // Use a separate test database or test environment
 const prisma = new PrismaClient();

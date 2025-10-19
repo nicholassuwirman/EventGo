@@ -19,7 +19,7 @@ jest.mock('@prisma/client', () => ({
 }));
 
 // Import router AFTER mocking
-const tagsRouter = require('../routes/tags').default;
+const tagsRouter = require('../../routes/tags').default;
 
 // Create Express app for testing
 const app = express();
