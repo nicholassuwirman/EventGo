@@ -36,8 +36,13 @@ const TagCard: React.FC<TagCardProps> = ({ tag, onEdit, onDelete }) => (
 
 const TagsHome: React.FC = () => {
   const [tags, setTags] = useState<Tag[]>([]);
-  const [showModal, setShowModal] = useState(false);
+
+  // modal is a name for pop up window that temporarily blocks interaction with the page until its closed
+  const [showModal, setShowModal] = useState(false); //default of showModal is false
+
+  // useState, form data is the state object with name and color as the parameter for the object (also with default values)
   const [formData, setFormData] = useState({ name: '', color: '#FF8040' });
+  
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
 
   // Fetch all tags from database
@@ -51,30 +56,34 @@ const TagsHome: React.FC = () => {
     }
   };
 
-  // ADD NEW TAG (POST)
-  const handleAddTag = async (tagData: { name: string; color: string }) => {
+  //tagData is a function parameter thats built out of name and color (its formData from our UI)
+  const handleAddTag = async (tagData: { name: string, color: string}) => {
     try {
-      const response = await fetch('http://localhost:4000/api/tags', {
-        method: 'POST',
+      const response = await fetch('http://localhost:4000/api/tags', {  //specify the API route
+        method: 'POST',   //specify the type of API that's called (if its not specified it default to GET)
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json',   //explicitly say to the API hey please expect a JSON data
         },
-        body: JSON.stringify(tagData),
+        body: JSON.stringify(tagData),  //THIS is the line that actually sends the data to the POST API
       });
-      
-      if (response.ok) {
-        const newTag = await response.json();
-        setTags(prevTags => [...prevTags, newTag]);
+
+      if(response.ok) {   //check if response status is 200-209
+        //the Create API returns a newTag, hence we get it via response.json()
+        //why dont we just use tagData? bcs its a local version of our data from the frontend
+        //to make sure the data is really created by tghe api and went well, we wait for the newTag passed by the API
+        const newTag = await response.json();       
+        setTags(prevTags => [...prevTags, newTag]); //add the newTag at the end of our prevTags array
         return true;
       }
       return false;
-    } catch (error) {
+
+    }catch (error) {
       console.error('Error adding tag:', error);
       return false;
     }
   };
 
-  // EDIT EXISTING TAG (PUT)
+  
   const handleEditTag = async (id: number, tagData: { name: string; color: string }) => {
     try {
       const response = await fetch(`http://localhost:4000/api/tags/${id}`, {
@@ -99,17 +108,20 @@ const TagsHome: React.FC = () => {
     }
   };
 
-  // Handle form submission (decides between add or edit)
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // handle form submission (decides between add or edit)
+  //async allows await inside the function body
+  //e is the parameter of the function
+  //e: React.FormEvent means that the event is a react form event
+  const handleFormSubmit = async (e: React.FormEvent) => { 
+    e.preventDefault(); //prevent default behaviour of after submitting html form it reloads the page
     
-    let success = false;
+    let success = false;  //is the api request a success?
     
     if (editingTag) {
       // EDIT existing tag
       success = await handleEditTag(editingTag.id, formData);
     } else {
-      // ADD new tag
+      // if its Add Tag button, send the formData (the Tag) to handleAddTag function
       success = await handleAddTag(formData);
     }
     
@@ -141,8 +153,15 @@ const TagsHome: React.FC = () => {
   };
 
   // Handle input changes
+  // e stands for evetn, which is automatically passed by react when an event occurs
+  // e: React.ChangeEvent is the type of events that occurs when the user changes the value of an input
+  //<HTMLInputElement> is saying that the event comes from an <input> element
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    // ...formData copies all existing properties of the formData object into the new object
+    // so if th euser only change the name, the color stays the same
+    // use [e.target.name] as the key to search the object
+    // e.target.value is the field that the user changed
+    setFormData({ ...formData, [e.target.name]: e.target.value });  
   };
 
   // Close modal
@@ -161,6 +180,8 @@ const TagsHome: React.FC = () => {
     <div className="tags-home-container">
       <div className="tags-home-header">
         <h1>Tags</h1>
+
+        {/*handle the Create tag*/}
         <button className="tags-home-add-btn" onClick={() => setShowModal(true)}>
           + Add Tag
         </button>
@@ -176,19 +197,20 @@ const TagsHome: React.FC = () => {
         ))}
       </div>
 
-      {/* Add/Edit Tag Modal */}
-      {showModal && (
+      {/* if showModal is true, return the UI (the add Tag window) */}
+      {/* showModal is set to true when clicking + Add Tag at line 166 */}
+      {showModal == true && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h2>{editingTag ? 'Edit Tag' : 'Add Tag'}</h2>
-            <form onSubmit={handleFormSubmit}>
+            <h2>{editingTag ? 'Edit Tag' : 'Add Tag'}</h2>  {/* if editing tag, modal header text is Edit Tag, else Add Tag */}
+            <form onSubmit={handleFormSubmit}>  {/* onSubmit of the form, throws it to handleFormSubmit function */}
               <label>
                 Tag Name:
                 <input
                   type="text"
                   name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
+                  value={formData.name}         //formData has name and color, now this assign the name to formData
+                  onChange={handleInputChange}  //after a change, lets say input is Party as a tag name, it directly calls handleInputChange
                   required
                 />
               </label>
@@ -203,8 +225,8 @@ const TagsHome: React.FC = () => {
                 />
               </label>
               <div style={{ marginTop: '1em', display: 'flex', gap: '1em' }}>
-                <button type="submit" className="tag-edit-btn">
-                  {editingTag ? 'Update' : 'Add'}
+                <button type="submit" className="tag-edit-btn"> {/* after clicking the button, it throws to line 190, hence type = submit */}
+                  {editingTag ? 'Update' : 'Add'}  {/* if editing tag, button name is Update, else Add */}
                 </button>
                 <button type="button" className="tag-delete-btn" onClick={closeModal}>
                   Cancel

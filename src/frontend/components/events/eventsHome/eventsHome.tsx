@@ -464,7 +464,6 @@ const EventsHome: React.FC = () => {
                   rows={3}
                   value={formData.description}
                   onChange={handleInputChange}
-                  required
                 />
               </label>
               <label>

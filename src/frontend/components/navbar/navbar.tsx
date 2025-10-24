@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './navbar.css'; 
+//This file is unused, replaced by sidebar
 
 const Navbar: React.FC = () => {
     return (
