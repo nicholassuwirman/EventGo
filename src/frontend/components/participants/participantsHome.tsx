@@ -30,14 +30,15 @@ const ParticipantsHome: React.FC = () => {
   const [editingParticipant, setEditingParticipant] = useState<Participant | null>(null);
   const [showEventsModal, setShowEventsModal] = useState(false);
   const [selectedParticipantEvents, setSelectedParticipantEvents] = useState<{ events: Event[], participantName: string }>({ events: [], participantName: '' });
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
-  // Function to determine if an event is upcoming or past
+  //determine if an event is upcoming or already in the past
   const getEventStatus = (eventDate: string): 'upcoming' | 'past' => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to start of today
+    today.setHours(0, 0, 0, 0); //set to start of today
     
     const eventDateTime = new Date(eventDate);
-    eventDateTime.setHours(0, 0, 0, 0); // Set to start of event date
+    eventDateTime.setHours(0, 0, 0, 0); //set to start of event date
     
     return eventDateTime >= today ? 'upcoming' : 'past';
   };
@@ -46,10 +47,15 @@ const ParticipantsHome: React.FC = () => {
   const fetchParticipants = async () => {
     try {
       const response = await fetch('http://localhost:4000/api/participants');
+      if (!response.ok) {
+        setErrorMessage('Failed to load participants. Please refresh the page.');
+        return;
+      }
       const data = await response.json();
       setParticipants(data);
     } catch(error){
       console.error('cant fetch events in participantsHome', error);
+      setErrorMessage('Failed to connect to server. Please check your connection.');
     }
   }
 
@@ -86,11 +92,15 @@ const ParticipantsHome: React.FC = () => {
         setFormData({ name: '', age: '' });
         setShowModal(false);
         setEditingParticipant(null);
+        setErrorMessage(''); //clear any previous errors
       } else {
-        console.error('Response not ok:', response.status, response.statusText);
+        //get error message from backend
+        const errorData = await response.json();
+        setErrorMessage(errorData.error || 'Failed to save participant');
       }
     } catch (error) {
       console.error('Error saving participant:', error);
+      setErrorMessage('Failed to connect to server. Please try again.');
     }
   };
 
@@ -98,12 +108,12 @@ const ParticipantsHome: React.FC = () => {
       fetchParticipants();
   }, []);
 
-  // Handle input changes
+  //handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Delete participant
+  //delete participant
   const handleDeleteParticipant = async (id: number) => {
     try {
       const response = await fetch(`http://localhost:4000/api/participants/${id}`, {
@@ -112,9 +122,15 @@ const ParticipantsHome: React.FC = () => {
 
       if(response.ok) {
         setParticipants(participants.filter(participant => participant.id !== id));
+        setErrorMessage(''); //clear any previous errors
+      } else {
+        //get error message from backend
+        const errorData = await response.json();
+        setErrorMessage(errorData.error || 'Failed to delete participant');
       }
     } catch (error){
       console.error('Error deleting participant:', error);
+      setErrorMessage('Failed to connect to server. Please try again.');
     }
   };
 
@@ -133,6 +149,20 @@ const ParticipantsHome: React.FC = () => {
         </button>
       </div>
 
+      {/* Display error message if any */}
+      {errorMessage && (
+        <div className="error-message" style={{ 
+          backgroundColor: '#ffebee', 
+          color: '#c62828', 
+          padding: '12px', 
+          borderRadius: '4px', 
+          marginBottom: '1em',
+          border: '1px solid #ef5350'
+        }}>
+          {errorMessage}
+        </div>
+      )}
+
       <div className="events-list">
         {participants.map((participant) => (
           <div className="event-card" key={participant.id}>
@@ -140,7 +170,7 @@ const ParticipantsHome: React.FC = () => {
               <h3 className="event-card-title">{participant.name}</h3>
               <p className="event-card-date">Age: {participant.age}</p>
               
-              {/* Show events button */}
+              {/*Show events button */}
               {participant.events && participant.events.length > 0 && (
                 <div className="participant-events-section">
                   <button 
@@ -168,6 +198,22 @@ const ParticipantsHome: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>{editingParticipant ? 'Edit Participant' : 'Add Participant'}</h2>
+            
+            {/* Display error message in modal if any */}
+            {errorMessage && (
+              <div className="error-message" style={{ 
+                backgroundColor: '#ffebee', 
+                color: '#c62828', 
+                padding: '10px', 
+                borderRadius: '4px', 
+                marginBottom: '1em',
+                border: '1px solid #ef5350',
+                fontSize: '0.9em'
+              }}>
+                {errorMessage}
+              </div>
+            )}
+
             <form onSubmit={handleFormSubmit}>
               <label>
                 Name:
@@ -177,6 +223,8 @@ const ParticipantsHome: React.FC = () => {
                   value={formData.name}
                   onChange={handleInputChange}
                   required
+                  minLength={1}
+                  placeholder="Enter participant name"
                 />
               </label>
               <label>
@@ -188,6 +236,8 @@ const ParticipantsHome: React.FC = () => {
                   onChange={handleInputChange}
                   required
                   min={0}
+                  max={150}
+                  placeholder="Enter age (0-150)"
                 />
               </label>
               <div className="modal-form-btn-container">
@@ -198,6 +248,7 @@ const ParticipantsHome: React.FC = () => {
                   setShowModal(false);
                   setFormData({ name: '', age: '' });
                   setEditingParticipant(null);
+                  setErrorMessage(''); //clear error when closing modal
                 }}>
                   Cancel
                 </button>

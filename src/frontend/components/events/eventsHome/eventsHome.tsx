@@ -43,7 +43,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => {
         <p className="event-card-duration">Place: {event.place}</p>
         <p className="event-card-duration">Description: {event.description}</p>
         
-        {/* Display event tags */}
+        {/*display event tags */}
         {event.tags && event.tags.length > 0 && (
           <div className="event-tags">
             <span className="event-tags-label">Tags: </span>
@@ -59,7 +59,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => {
           </div>
         )}
 
-        {/* Show participants button */}
+        {/*show participants button */}
         {event.participants && event.participants.length > 0 && (
           <div className="event-participants-section">
             <button 
@@ -77,7 +77,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => {
         </div>
       </div>
 
-      {/* Participants Modal */}
+      {/*participants Modal */}
       {showParticipants && (
         <div className="participants-modal-overlay" onClick={() => setShowParticipants(false)}>
           <div className="participants-modal-content" onClick={(e) => e.stopPropagation()}>
@@ -101,7 +101,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, onDelete, onEdit }) => {
 };
 
 const EventsHome: React.FC = () => {
-  // Search/filter state
+  //search/filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [searchPlace, setSearchPlace] = useState('');
   const [searchStartDate, setSearchStartDate] = useState('');
@@ -109,6 +109,7 @@ const EventsHome: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
+  //TODO: participant array not showing the participants in the cards?
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -122,28 +123,31 @@ const EventsHome: React.FC = () => {
   });
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [filterByTag, setFilterByTag] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
-  // Fetch events from backend
+  //fetch events from backend
   const fetchEvents = async () => {
     try {
       const response = await fetch('http://localhost:4000/api/events');
       if (response.ok) {
         const data = await response.json();
-        // Ensure data is an array
+        //ensure data is an array
         setEvents(Array.isArray(data) ? data : []);
       } else {
         console.error('Failed to fetch events:', response.status);
+        setErrorMessage('Failed to load events. Please refresh the page.');
         setEvents([]);
       }
       setLoading(false);
     } catch (error) {
       console.error('Error fetching events:', error);
+      setErrorMessage('Failed to connect to server. Please check your connection.');
       setEvents([]);
       setLoading(false);
     }
   };
 
-  // Fetch tags from backend
+  //fetch tags from backend
   const fetchTags = async () => {
     try {
       const response = await fetch('http://localhost:4000/api/tags');
@@ -154,7 +158,7 @@ const EventsHome: React.FC = () => {
     }
   };
 
-  // Fetch participants from backend
+  //fetch participants from backend
   const fetchParticipants = async () => {
     try {
       const response = await fetch('http://localhost:4000/api/participants');
@@ -165,13 +169,13 @@ const EventsHome: React.FC = () => {
     }
   };
 
-  // Fetch events by specific tag
+  //fetch events by specific tag
   const fetchEventsByTag = async (tagId: number) => {
     try {
       const response = await fetch(`http://localhost:4000/api/events/by-tag/${tagId}`);
       if (response.ok) {
         const data = await response.json();
-        // Ensure data is an array
+        //ensure data is an array
         setEvents(Array.isArray(data) ? data : []);
       } else {
         console.error('Failed to fetch events by tag:', response.status);
@@ -185,7 +189,7 @@ const EventsHome: React.FC = () => {
     }
   };
 
-  // Add or update event
+  //add or update event
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -203,43 +207,43 @@ const EventsHome: React.FC = () => {
       
       if (response.ok) {
         const savedEvent = await response.json();
-        console.log('Saved event:', savedEvent); // Debug log
+        console.log('Saved event:', savedEvent); //debug log
         
-        // Update the events state
+        //update the events state
         setEvents(prevEvents => {
           if (editingEvent) {
             const updatedEvents = prevEvents.map(event => 
               event.id === savedEvent.id ? savedEvent : event
             );
-            console.log('Updated events:', updatedEvents); // Debug log
+            console.log('Updated events:', updatedEvents); //debug log
             return updatedEvents;
           } else {
             return [...prevEvents, savedEvent];
           }
         });
         
-        // Signal that events were updated for dashboard refresh
+        // signal that events were updated for dashboard refresh
         localStorage.setItem('eventsUpdated', Date.now().toString());
         
-        // Reset form and close modal
+        //reset form and close modal
         setFormData({ name: '', date: '', duration: '', description: '' , place: '', tagIds: [], participantIds: []});
         setShowModal(false);
         setEditingEvent(null);
+        setErrorMessage(''); //clear any previous errors
         
-        // Don't refetch all events to maintain order - the state update above is sufficient
+        // dont refetch all events to maintain order - the state update above is sufficient
       } else {
-        const errorText = await response.text();
-        console.error('Response not ok:', response.status, response.statusText, errorText);
-        setFormData({ name: '', date: '', duration: '', description: '' , place: '', tagIds: [], participantIds: []});
-        setShowModal(false);
-        setEditingEvent(null);
+        //get error message from backend
+        const errorData = await response.json();
+        setErrorMessage(errorData.error || 'Failed to save event');
       }
     } catch (error) {
       console.error('Error saving event:', error);
+      setErrorMessage('Failed to connect to server. Please try again.');
     }
   };
 
-  // Delete event
+  //delete event
   const handleDeleteEvent = async (id: number) => {
     try {
       const response = await fetch(`http://localhost:4000/api/events/${id}`, {
@@ -247,16 +251,22 @@ const EventsHome: React.FC = () => {
       });
       
       if (response.ok) {
+        setErrorMessage(''); //clear any previous errors
         setEvents(events.filter(event => event.id !== id));
-        // Signal that events were updated for dashboard refresh
+        //signal that events were updated for dashboard refresh
         localStorage.setItem('eventsUpdated', Date.now().toString());
+      } else {
+        //get error message from backend
+        const errorData = await response.json();
+        setErrorMessage(errorData.error || 'Failed to delete event');
       }
     } catch (error) {
       console.error('Error deleting event:', error);
+      setErrorMessage('Failed to connect to server. Please try again.');
     }
   };
 
-  // Handle form input changes
+  //handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (e.target.name === 'tagIds' && e.target instanceof HTMLSelectElement) {
       const selectedOptions = Array.from(e.target.selectedOptions);
@@ -280,14 +290,15 @@ const EventsHome: React.FC = () => {
     }
   };
 
-  // Close modal
+  //close the modal
   const closeModal = () => {
     setShowModal(false);
     setEditingEvent(null);
     setFormData({ name: '', date: '', duration: '', description: '', place: '', tagIds: [], participantIds: [] });
+    setErrorMessage(''); //clear error when closing modal
   };
 
-  // Handle edit button click
+  //handle edit button click
   const handleEditClick = (event: Event) => {
     setEditingEvent(event);
     setFormData({
@@ -302,7 +313,7 @@ const EventsHome: React.FC = () => {
     setShowModal(true);
   };
 
-  // Handle filter by tag
+  //handle filter by tag
   const handleFilterByTag = (tagId: number | null) => {
     setFilterByTag(tagId);
     setLoading(true);
@@ -313,7 +324,7 @@ const EventsHome: React.FC = () => {
     }
   };
 
-  // Fetch events, tags and participants on component mount
+  //fetch events, tags and participants on component mount
   useEffect(() => {
     fetchEvents();
     fetchTags();
@@ -324,42 +335,42 @@ const EventsHome: React.FC = () => {
     <div className="events-home-container">
       <div className="events-home-header">
         <h1>Events</h1>
-        {/* Search and filter bar */}
+        {/*search and filter bar */}
         <div className='events-home-bar' >
-          <div style={{ display: 'flex', gap: '1em', alignItems: 'center' }}>
+          <div className="search-bar-container">
             <input
               type="text"
               placeholder="Search by name..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              style={{ padding: '0.5em', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem', width: '180px' }}
+              className="search-input"
             />
             <input
               type="text"
               placeholder="Search by place..."
               value={searchPlace}
               onChange={e => setSearchPlace(e.target.value)}
-              style={{ padding: '0.5em', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem', width: '180px' }}
+              className="search-input"
             />
             <input
               type="date"
               placeholder="Start date"
               value={searchStartDate}
               onChange={e => setSearchStartDate(e.target.value)}
-              style={{ padding: '0.5em', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem', width: '140px' }}
+              className="search-date-input"
             />
             <input
               type="date"
               placeholder="End date"
               value={searchEndDate}
               onChange={e => setSearchEndDate(e.target.value)}
-              style={{ padding: '0.5em', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem', width: '140px' }}
+              className="search-date-input"
             />
-            {/* Filter by tag dropdown */}
+            {/*filter by tag dropdown */}
             <select 
               value={filterByTag || ''} 
               onChange={e => handleFilterByTag(e.target.value ? parseInt(e.target.value) : null)}
-              style={{ padding: '0.5em', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem' }}
+              className="filter-dropdown"
             >
               <option value="">All Events</option>
               {tags.map(tag => (
@@ -377,6 +388,21 @@ const EventsHome: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Display error message if any */}
+      {errorMessage && (
+        <div className="error-message" style={{ 
+          backgroundColor: '#ffebee', 
+          color: '#c62828', 
+          padding: '12px', 
+          borderRadius: '4px', 
+          marginBottom: '1em',
+          border: '1px solid #ef5350'
+        }}>
+          {errorMessage}
+        </div>
+      )}
+
       <div className="events-list">
         {loading ? (
           <p>Loading events...</p>
@@ -387,11 +413,11 @@ const EventsHome: React.FC = () => {
             console.log('Rendering events:', events);
             console.log('Current filters:', { searchTerm, searchPlace, searchStartDate, searchEndDate });
             const filteredEvents = events.filter(event => {
-              // Filter by name
+              //filter by name
               if (searchTerm && !event.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-              // Filter by place
+              //filter by place
               if (searchPlace && !event.place.toLowerCase().includes(searchPlace.toLowerCase())) return false;
-              // Filter by date range
+              //filter by date range
               if (searchStartDate && new Date(event.date) < new Date(searchStartDate)) return false;
               if (searchEndDate && new Date(event.date) > new Date(searchEndDate)) return false;
               return true;
@@ -414,6 +440,22 @@ const EventsHome: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>{editingEvent ? 'Edit Event' : 'Add Event'}</h2>
+
+            {/* Display error message in modal if any */}
+            {errorMessage && (
+              <div className="error-message" style={{ 
+                backgroundColor: '#ffebee', 
+                color: '#c62828', 
+                padding: '10px', 
+                borderRadius: '4px', 
+                marginBottom: '1em',
+                border: '1px solid #ef5350',
+                fontSize: '0.9em'
+              }}>
+                {errorMessage}
+              </div>
+            )}
+
             <form onSubmit={handleFormSubmit}>
               <label>
                 Event Name:
@@ -423,6 +465,7 @@ const EventsHome: React.FC = () => {
                   placeholder="Event Name" 
                   value={formData.name}
                   onChange={handleInputChange}
+                  minLength={1}
                   required
                 />
               </label>
@@ -444,7 +487,10 @@ const EventsHome: React.FC = () => {
                   placeholder="Duration" 
                   value={formData.duration}
                   onChange={handleInputChange}
+                  required
+                  minLength={1}
                 />
+              </label>
               <label>
                 Place:
                 <input 
@@ -453,8 +499,9 @@ const EventsHome: React.FC = () => {
                   placeholder="Place" 
                   value={formData.place}
                   onChange={handleInputChange}
+                  required
+                  minLength={1}
                 />
-              </label>
               </label>
               <label>
                 Description:
@@ -464,6 +511,8 @@ const EventsHome: React.FC = () => {
                   rows={3}
                   value={formData.description}
                   onChange={handleInputChange}
+                  required
+                  minLength={1}
                 />
               </label>
               <label>
@@ -473,14 +522,7 @@ const EventsHome: React.FC = () => {
                   multiple
                   value={formData.tagIds.map(String)}
                   onChange={handleInputChange}
-                  style={{ 
-                    height: '120px', 
-                    width: '100%', 
-                    padding: '0.5em',
-                    border: '1px solid #ccc',
-                    borderRadius: '8px',
-                    fontSize: '1rem'
-                  }}
+                  className="select-multiple"
                 >
                   {tags.map(tag => (
                     <option key={tag.id} value={tag.id}>
@@ -488,7 +530,7 @@ const EventsHome: React.FC = () => {
                     </option>
                   ))}
                 </select>
-                <small style={{ color: '#666', fontSize: '0.8em' }}>
+                <small className="select-help-text">
                   Hold Ctrl (Windows) or Cmd (Mac) to select multiple tags
                 </small>
               </label>
@@ -499,14 +541,7 @@ const EventsHome: React.FC = () => {
                   multiple
                   value={formData.participantIds.map(String)}
                   onChange={handleInputChange}
-                  style={{ 
-                    height: '120px', 
-                    width: '100%', 
-                    padding: '0.5em',
-                    border: '1px solid #ccc',
-                    borderRadius: '8px',
-                    fontSize: '1rem'
-                  }}
+                  className="select-multiple"
                 >
                   {participants.map(participant => (
                     <option key={participant.id} value={participant.id}>
@@ -514,11 +549,11 @@ const EventsHome: React.FC = () => {
                     </option>
                   ))}
                 </select>
-                <small style={{ color: '#666', fontSize: '0.8em' }}>
+                <small className="select-help-text">
                   Hold Ctrl (Windows) or Cmd (Mac) to select multiple participants
                 </small>
               </label>
-              <div style={{ marginTop: '1em', display: 'flex', gap: '1em' }}>
+              <div className="modal-actions">
                 <button type="submit" className="event-card-edit">
                   {editingEvent ? 'Update' : 'Add'}
                 </button>

@@ -5,26 +5,26 @@ import { PrismaClient } from '@prisma/client';
 const router = Router();
 const prisma = new PrismaClient();
 
-// GET all events with their tags and participants
+//Read
 router.get('/', async (_req: Request, res: Response) => {
   try {
     const events = await prisma.event.findMany({
       include: {
         tags: {
           include: {
-            tag: true
+            tag: true   //for each event, includ ethe tag
           }
         },
         participants: {
           include: {
-            participant: true
+            participant: true   //for each event, include participant
           }
         }
       },
-      orderBy: { id: 'asc' }
+      orderBy: {id: 'asc'}  //ascending
     });
     
-    // Transform the events to the expected format
+    //change the events to the expected format
     const eventsWithTagsAndParticipants = events.map((event) => {
       return {
         id: event.id,
@@ -45,19 +45,54 @@ router.get('/', async (_req: Request, res: Response) => {
   }
 });
 
-// POST - Add an event with tags and participants
+//Create
 router.post('/', async (req: Request, res: Response) => {
-  const { name, date, duration, description, place, tagIds = [], participantIds = [] } = req.body;
-  
-  // Basic validation
+  //crete 2 empty arrays for the tagIds and participantIds
+  const {name, date, duration, description, place, tagIds = [], participantIds = []} = req.body;
+
+  //validate required fields
   if (!name || !date || !duration || !description || !place) {
-    return res.status(400).json({ 
-      error: 'All fields are required: name, date, duration, description, and place' 
-    });
+    return res.status(400).json({error: 'Name, date, duration, description, and place are required'});
   }
-  
+
+  //validate name is not empty or just whitespace
+  if (name.trim().length === 0) {
+    return res.status(400).json({error: 'Name cannot be empty'});
+  }
+
+  //validate date format
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) {
+    return res.status(400).json({error: 'Invalid date format'});
+  }
+
+  //validate duration is not empty
+  if (duration.trim().length === 0) {
+    return res.status(400).json({error: 'Duration cannot be empty'});
+  }
+
+  //validate description is not empty
+  if (description.trim().length === 0) {
+    return res.status(400).json({error: 'Description cannot be empty'});
+  }
+
+  //validate place is not empty
+  if (place.trim().length === 0) {
+    return res.status(400).json({error: 'Place cannot be empty'});
+  }
+
+  //validate tagIds is an array
+  if (!Array.isArray(tagIds)) {
+    return res.status(400).json({error: 'Tag IDs must be an array'});
+  }
+
+  //validate participantIds is an array
+  if (!Array.isArray(participantIds)) {
+    return res.status(400).json({error: 'Participant IDs must be an array'});
+  }
+
   try {
-    // Create the event first
+    //create the event first
     const newEvent = await prisma.event.create({
       data: { 
         name, 
@@ -68,7 +103,7 @@ router.post('/', async (req: Request, res: Response) => {
       }
     });
 
-    // Create tag associations separately
+    //create tag association
     if (tagIds.length > 0) {
       await Promise.all(
         tagIds.map((tagId: number) =>
@@ -82,42 +117,45 @@ router.post('/', async (req: Request, res: Response) => {
       );
     }
 
-    // Create participant associations separately using raw query
+    //create participant association
     if (participantIds.length > 0) {
-      for (const participantId of participantIds) {
-        await prisma.$executeRaw`INSERT INTO event_participants (event_id, participant_id) VALUES (${newEvent.id}, ${participantId})`;
-      }
+      await Promise.all(
+        participantIds.map((participantId: number) =>
+          prisma.eventParticipant.create({
+            data: {
+              eventId: newEvent.id,
+              participantId: participantId
+            }
+          })
+        )
+      );
     }
-
-    // Fetch the complete event with tags
+    // fetch the event with the tag and participants relation
     const eventWithRelations = await prisma.event.findUnique({
-      where: { id: newEvent.id },
+      where: {id: newEvent.id },
       include: {
         tags: {
           include: {
             tag: true
           }
+        },
+        participants: {
+          include: {
+            participant: true
+          }
         }
       }
     });
 
-    // Fetch participants separately
-    const participants = await prisma.$queryRaw`
-      SELECT p.id, p.name, p.age 
-      FROM "Participant" p 
-      INNER JOIN event_participants ep ON p.id = ep.participant_id 
-      WHERE ep.event_id = ${newEvent.id}
-    `;
-
     const response = {
       id: eventWithRelations!.id,
       name: eventWithRelations!.name,
-      date: eventWithRelations!.date.toISOString().split('T')[0],
+      date: eventWithRelations!.date.toISOString().split('T')[0], //make it look good
       duration: eventWithRelations!.duration,
       description: eventWithRelations!.description,
       place: eventWithRelations!.place,
       tags: (eventWithRelations as any).tags.map((eventTag: any) => eventTag.tag),
-      participants: participants || []
+      participants: (eventWithRelations as any).participants.map((eventParticipant: any) => eventParticipant.participant)
     };
     
     res.status(201).json(response);
@@ -127,20 +165,59 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-// PUT - Update an event with tags and participants
+// Update
 router.put('/:id', async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { name, date, duration, description, place, tagIds = [], participantIds = [] } = req.body;
-  
-  // Basic validation
-  if (!name || !date || !duration || !description || !place) {
-    return res.status(400).json({ 
-      error: 'All fields are required: name, date, duration, description, and place' 
-    });
+  const {id} = req.params;
+  const {name, date, duration, description, place, tagIds = [], participantIds = [] } = req.body;
+
+  //validate id is a valid number
+  if (isNaN(parseInt(id))) {
+    return res.status(400).json({error: 'Invalid event ID'});
   }
-  
+
+  //validate required fields
+  if (!name || !date || !duration || !description || !place) {
+    return res.status(400).json({error: 'Name, date, duration, description, and place are required'});
+  }
+
+  //validate name is not empty or just whitespace
+  if (name.trim().length === 0) {
+    return res.status(400).json({error: 'Name cannot be empty'});
+  }
+
+  //validate date format
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) {
+    return res.status(400).json({error: 'Invalid date format'});
+  }
+
+  //validate duration is not empty
+  if (duration.trim().length === 0) {
+    return res.status(400).json({error: 'Duration cannot be empty'});
+  }
+
+  //validate description is not empty
+  if (description.trim().length === 0) {
+    return res.status(400).json({error: 'Description cannot be empty'});
+  }
+
+  //validate place is not empty
+  if (place.trim().length === 0) {
+    return res.status(400).json({error: 'Place cannot be empty'});
+  }
+
+  //validate tagIds is an array
+  if (!Array.isArray(tagIds)) {
+    return res.status(400).json({error: 'Tag IDs must be an array'});
+  }
+
+  //validate participantIds is an array
+  if (!Array.isArray(participantIds)) {
+    return res.status(400).json({error: 'Participant IDs must be an array'});
+  }
+
   try {
-    // First update the event basic info
+    //update the asic info of the event (based ont he table for event)
     await prisma.event.update({
       where: { id: parseInt(id) },
       data: { 
@@ -152,7 +229,8 @@ router.put('/:id', async (req: Request, res: Response) => {
       }
     });
 
-    // Delete existing tag associations and create new ones
+    //delete existing tag associations and create new one
+    //i tried adding it directly to the current array but doesnt work
     await prisma.eventTag.deleteMany({
       where: { eventId: parseInt(id) }
     });
@@ -170,24 +248,37 @@ router.put('/:id', async (req: Request, res: Response) => {
       );
     }
 
-    // Delete and create participant associations using simpler approach
-    // Delete existing participant associations
-    await prisma.$executeRaw`DELETE FROM event_participants WHERE event_id = ${parseInt(id)}`;
+    //delete participant associations using Prisma
+    await prisma.eventParticipant.deleteMany({
+      where: { eventId: parseInt(id) }
+    });
     
-    // Create new participant associations
+    //create new participant associations using Prisma
     if (participantIds.length > 0) {
-      for (const participantId of participantIds) {
-        await prisma.$executeRaw`INSERT INTO event_participants (event_id, participant_id) VALUES (${parseInt(id)}, ${participantId})`;
-      }
+      await Promise.all(
+        participantIds.map((participantId: number) =>
+          prisma.eventParticipant.create({
+            data: {
+              eventId: parseInt(id),
+              participantId: participantId
+            }
+          })
+        )
+      );
     }
 
-    // Fetch the complete event with relations (reuse the same logic as GET)
+    //fetch the complete event with relations (same as GET)
     const event = await prisma.event.findUnique({
-      where: { id: parseInt(id) },
+      where: {id: parseInt(id)},
       include: {
         tags: {
           include: {
             tag: true
+          }
+        },
+        participants: {
+          include: {
+            participant: true
           }
         }
       }
@@ -196,16 +287,8 @@ router.put('/:id', async (req: Request, res: Response) => {
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
     }
-
-    // Get participants using simpler query
-    const participants = await prisma.$queryRaw`
-      SELECT p.id, p.name, p.age 
-      FROM "Participant" p 
-      INNER JOIN event_participants ep ON p.id = ep.participant_id 
-      WHERE ep.event_id = ${parseInt(id)}
-    `;
     
-    // Transform response (same format as other routes)
+    //transform response, it's the same as the other ones
     const response = {
       id: event.id,
       name: event.name,
@@ -214,34 +297,47 @@ router.put('/:id', async (req: Request, res: Response) => {
       description: event.description,
       place: event.place,
       tags: (event as any).tags ? (event as any).tags.map((eventTag: any) => eventTag.tag) : [],
-      participants: participants || []
+      participants: (event as any).participants ? (event as any).participants.map((eventParticipant: any) => eventParticipant.participant) : []
     };
     
     res.json(response);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating event:', error);
-    console.error('Error details:', error);
-    res.status(500).json({ error: 'Failed to update event', details: error });
+    //check if event doesn't exist
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+    res.status(500).json({ error: 'Failed to update event' });
   }
 });
 
-// DELETE to delete event
+//Delete
 router.delete('/:id', async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const {id} = req.params;
+
+  //validate id is a valid number
+  if (isNaN(parseInt(id))) {
+    return res.status(400).json({error: 'Invalid event ID'});
+  }
+
   try {
     await prisma.event.delete({
-      where: { id: parseInt(id) }
+      where: {id: parseInt(id)}
     });
     res.json({ message: 'Event deleted successfully' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting event:', error);
+    //check if event doesn't exist
+    if (error.code === 'P2025') {
+      return res.status(404).json({ error: 'Event not found' });
+    }
     res.status(500).json({ error: 'Failed to delete event' });
   }
 });
 
-// GET events by tag (for sorting by tags)
+//Read
 router.get('/by-tag/:tagId', async (req: Request, res: Response) => {
-  const { tagId } = req.params;
+  const {tagId} = req.params;
   try {
     const events = await prisma.event.findMany({
       where: {

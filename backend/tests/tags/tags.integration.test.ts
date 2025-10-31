@@ -185,9 +185,9 @@ describe('Tags API Integration Tests', () => {
           color: '#FF5733'
         });
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(404);
       expect(response.body).toEqual({
-        error: 'Failed to update tag'
+        error: 'Tag not found'
       });
     });
   });
@@ -221,9 +221,9 @@ describe('Tags API Integration Tests', () => {
       const response = await request(app)
         .delete(`/api/tags/${nonExistentId}`);
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(404);
       expect(response.body).toEqual({
-        error: 'Failed to delete tag'
+        error: 'Tag not found'
       });
     });
   });

@@ -16,6 +16,22 @@ const prisma = new PrismaClient();  //instance of the class that we created on l
 router.post('/', async (req: Request, res: Response) => {
     const {name, color} = req.body; //this function expects the request body to contain name and color (just like the table columns)
 
+    //validate required fields
+    if (!name || !color) {
+        return res.status(400).json({error: 'Name and color are required'});
+    }
+
+    //validate name is not empty or just whitespace
+    if (name.trim().length === 0) {
+        return res.status(400).json({error: 'Name cannot be empty'});
+    }
+
+    //validate color format (hex color code)
+    const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
+    if (!hexColorRegex.test(color)) {
+        return res.status(400).json({error: 'Invalid color format. Use hex format like #FF8040'});
+    }
+
      //await bcs prisma.tag.create is asynchronous
      //prisma is the prisma isntace that we created on line 8
      //tag is the name of our table in schema.prisma (the tag table one)
@@ -31,7 +47,7 @@ router.post('/', async (req: Request, res: Response) => {
         //sends back a json formatted of the object that we just created above
         res.status(201).json(newTag);
     } catch (error) {
-        res.status(500).json({error: 'failed to create tag'});
+        res.status(500).json({error: 'Failed to create tag'});
     }
 
 });
@@ -56,13 +72,22 @@ router.delete('/:id', async(req: Request, res: Response) => {
     //so z.B. id that we want to delete is 3, it will be like DELETE /tags/3 
     const {id} = req.params;
 
+    //validate id is a valid number
+    if (isNaN(parseInt(id))) {
+        return res.status(400).json({error: 'Invalid tag ID'});
+    }
+
     try {
         await prisma.tag.delete({
             where: {id: parseInt(id)}   //change the id from string to int
         });
-        res.json({message: 'tag deleted successfully'});
-    } catch(error) {
-        res.status(500).json({error: 'failed to delete tag'})
+        res.json({message: 'Tag deleted successfully'});
+    } catch(error: any) {
+        //check if tag doesn't exist
+        if (error.code === 'P2025') {
+            return res.status(404).json({error: 'Tag not found'});
+        }
+        res.status(500).json({error: 'Failed to delete tag'})
     }
 });
 
@@ -71,14 +96,39 @@ router.put('/:id',  async (req: Request, res: Response) => {
     const {id} = req.params; 
     const {name, color} = req.body; //the new data to update the id
 
+    //validate id is a valid number
+    if (isNaN(parseInt(id))) {
+        return res.status(400).json({error: 'Invalid tag ID'});
+    }
+
+    //validate required fields
+    if (!name || !color) {
+        return res.status(400).json({error: 'Name and color are required'});
+    }
+
+    //validate name is not empty or just whitespace
+    if (name.trim().length === 0) {
+        return res.status(400).json({error: 'Name cannot be empty'});
+    }
+
+    //validate color format (hex color code)
+    const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
+    if (!hexColorRegex.test(color)) {
+        return res.status(400).json({error: 'Invalid color format. Use hex format like #FF8040'});
+    }
+
     try {
         const updatedTag = await prisma.tag.update({
             where:{id: parseInt(id)},   //tells which record to update (gives the id)
             data: {name, color}         //tells prisma what to update (here the name and color is to be updated)
         });
-        res.status(201).json(updatedTag);
-    }catch (error) {
-        res.status(500).json({error: 'failed to update tag'})
+        res.status(200).json(updatedTag);
+    }catch (error: any) {
+        //check if tag doesn't exist
+        if (error.code === 'P2025') {
+            return res.status(404).json({error: 'Tag not found'});
+        }
+        res.status(500).json({error: 'Failed to update tag'})
     }
 })
 

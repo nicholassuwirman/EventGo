@@ -35,6 +35,8 @@ const TagCard: React.FC<TagCardProps> = ({ tag, onEdit, onDelete }) => (
 );
 
 const TagsHome: React.FC = () => {
+  //useState of tags and setTags (setter)
+  //where Tag[] mean sarray of Tag objects and ([]) means the array is empty
   const [tags, setTags] = useState<Tag[]>([]);
 
   // modal is a name for pop up window that temporarily blocks interaction with the page until its closed
@@ -43,16 +45,26 @@ const TagsHome: React.FC = () => {
   // useState, form data is the state object with name and color as the parameter for the object (also with default values)
   const [formData, setFormData] = useState({ name: '', color: '#FF8040' });
   
+  //editingTag can be either Tag or null (when no tag is being edited)
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
 
+  //error message state for user feedback
+  const [errorMessage, setErrorMessage] = useState<string>('');
+
   // Fetch all tags from database
+  //when no method are specified, it defaults to get (so you can get away without saying method: 'GET')
   const fetchTags = async () => {
     try {
       const response = await fetch('http://localhost:4000/api/tags');
+      if (!response.ok) {
+        setErrorMessage('Failed to load tags. Please refresh the page.');
+        return;
+      }
       const data = await response.json();
-      setTags(data);
+      setTags(data);  //pass all of the tags data to the array of Tags
     } catch (error) {
       console.error('Error fetching tags:', error);
+      setErrorMessage('Failed to connect to server. Please check your connection.');
     }
   };
 
@@ -73,12 +85,18 @@ const TagsHome: React.FC = () => {
         //to make sure the data is really created by tghe api and went well, we wait for the newTag passed by the API
         const newTag = await response.json();       
         setTags(prevTags => [...prevTags, newTag]); //add the newTag at the end of our prevTags array
+        setErrorMessage(''); //clear any previous errors
         return true;
+      } else {
+        //get error message from backend
+        const errorData = await response.json();
+        setErrorMessage(errorData.error || 'Failed to add tag');
+        return false;
       }
-      return false;
 
     }catch (error) {
       console.error('Error adding tag:', error);
+      setErrorMessage('Failed to connect to server. Please try again.');
       return false;
     }
   };
@@ -99,11 +117,17 @@ const TagsHome: React.FC = () => {
         setTags(prevTags => 
           prevTags.map(tag => tag.id === updatedTag.id ? updatedTag : tag)
         );
+        setErrorMessage(''); //clear any previous errors
         return true;
+      } else {
+        //get error message from backend
+        const errorData = await response.json();
+        setErrorMessage(errorData.error || 'Failed to update tag');
+        return false;
       }
-      return false;
     } catch (error) {
       console.error('Error editing tag:', error);
+      setErrorMessage('Failed to connect to server. Please try again.');
       return false;
     }
   };
@@ -131,6 +155,7 @@ const TagsHome: React.FC = () => {
   };
 
   // Delete tag
+  //needs an ID to specify which to delete
   const handleDeleteTag = async (id: number) => {
     try {
       const response = await fetch(`http://localhost:4000/api/tags/${id}`, {
@@ -138,10 +163,18 @@ const TagsHome: React.FC = () => {
       });
       
       if (response.ok) {
+        //create a new array without the tag without the deleted id
+        //thats why tag.id !== id
         setTags(tags.filter(tag => tag.id !== id));
+        setErrorMessage(''); //clear any previous errors
+      } else {
+        //get error message from backend
+        const errorData = await response.json();
+        setErrorMessage(errorData.error || 'Failed to delete tag');
       }
     } catch (error) {
       console.error('Error deleting tag:', error);
+      setErrorMessage('Failed to connect to server. Please try again.');
     }
   };
 
@@ -169,6 +202,7 @@ const TagsHome: React.FC = () => {
     setShowModal(false);
     setEditingTag(null);
     setFormData({ name: '', color: '#FF8040' });
+    setErrorMessage(''); //clear error when closing modal
   };
 
   // Fetch tags on component mount
@@ -186,6 +220,21 @@ const TagsHome: React.FC = () => {
           + Add Tag
         </button>
       </div>
+
+      {/* Display error message if any */}
+      {errorMessage && (
+        <div className="error-message" style={{ 
+          backgroundColor: '#ffebee', 
+          color: '#c62828', 
+          padding: '12px', 
+          borderRadius: '4px', 
+          marginBottom: '1em',
+          border: '1px solid #ef5350'
+        }}>
+          {errorMessage}
+        </div>
+      )}
+
       <div className="tags-list">
         {tags.map(tag => (
           <TagCard 
@@ -203,6 +252,22 @@ const TagsHome: React.FC = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>{editingTag ? 'Edit Tag' : 'Add Tag'}</h2>  {/* if editing tag, modal header text is Edit Tag, else Add Tag */}
+            
+            {/* Display error message in modal if any */}
+            {errorMessage && (
+              <div className="error-message" style={{ 
+                backgroundColor: '#ffebee', 
+                color: '#c62828', 
+                padding: '10px', 
+                borderRadius: '4px', 
+                marginBottom: '1em',
+                border: '1px solid #ef5350',
+                fontSize: '0.9em'
+              }}>
+                {errorMessage}
+              </div>
+            )}
+
             <form onSubmit={handleFormSubmit}>  {/* onSubmit of the form, throws it to handleFormSubmit function */}
               <label>
                 Tag Name:
@@ -212,6 +277,8 @@ const TagsHome: React.FC = () => {
                   value={formData.name}         //formData has name and color, now this assign the name to formData
                   onChange={handleInputChange}  //after a change, lets say input is Party as a tag name, it directly calls handleInputChange
                   required
+                  minLength={1}
+                  placeholder="Enter tag name"
                 />
               </label>
               <label>

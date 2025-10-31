@@ -28,7 +28,7 @@ model Participant {
   name       String
   age        Int
   
-  // Many-to-many relationship with Events
+  //many to many relationship with Events
   events     EventParticipant[]
 }
 
@@ -37,7 +37,7 @@ model Tag {
   name       String
   color      String
   
-  // Many-to-many relationship with Events
+  //many to many relationship with Events
   events     EventTag[]
 }
 

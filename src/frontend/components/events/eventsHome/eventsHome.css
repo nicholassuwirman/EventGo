@@ -201,6 +201,57 @@
   font-size: 1rem;
 }
 
+/* Search inputs */
+.search-input {
+  padding: 0.5em;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  width: 180px;
+}
+
+.search-date-input {
+  padding: 0.5em;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  width: 140px;
+}
+
+.filter-dropdown {
+  padding: 0.5em;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.search-bar-container {
+  display: flex;
+  gap: 1em;
+  align-items: center;
+}
+
+/* Select multiple for tags and participants */
+.select-multiple {
+  height: 120px;
+  width: 100%;
+  padding: 0.5em;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.select-help-text {
+  color: #666;
+  font-size: 0.8em;
+}
+
+.modal-actions {
+  margin-top: 1em;
+  display: flex;
+  gap: 1em;
+}
+
 .tag-select-help {
   color: #666;
   font-size: 0.8em;

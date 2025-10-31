@@ -277,9 +277,9 @@ describe('Participants API Integration Tests', () => {
           age: 30
         });
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(404);
       expect(response.body).toEqual({
-        error: 'Failed to update participant'
+        error: 'Participant not found'
       });
     });
 
@@ -348,9 +348,9 @@ describe('Participants API Integration Tests', () => {
       const response = await request(app)
         .delete(`/api/participants/${nonExistentId}`);
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(404);
       expect(response.body).toEqual({
-        error: 'Failed to delete participant'
+        error: 'Participant not found'
       });
     });
 

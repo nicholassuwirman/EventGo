@@ -571,8 +571,8 @@ describe('Events API Integration Tests', () => {
           place: 'Updated place'
         });
 
-      expect(response.status).toBe(500);
-      expect(response.body).toHaveProperty('error', 'Failed to update event');
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('error', 'Event not found');
     });
   });
 
@@ -693,9 +693,9 @@ describe('Events API Integration Tests', () => {
       const response = await request(app)
         .delete(`/api/events/${nonExistentId}`);
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(404);
       expect(response.body).toEqual({
-        error: 'Failed to delete event'
+        error: 'Event not found'
       });
     });
   });
