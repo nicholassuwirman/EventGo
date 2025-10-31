@@ -1,0 +1,30 @@
+# Node modules and build artifacts
+node_modules
+dist
+coverage
+
+# Git and IDE files
+.git
+.gitignore
+.vscode
+
+# Documentation
+*.md
+
+# Test files
+**/*.test.*
+**/*.spec.*
+tests/
+postman/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Keep .env.example but exclude actual .env (will be provided via docker-compose)
+.env
+.env.test.example
+
+# OS files
+.DS_Store
+Thumbs.db

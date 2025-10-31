@@ -1,0 +1,36 @@
+﻿# Node modules and build artifacts
+node_modules
+dist
+coverage
+
+# Git and IDE files
+.git
+.gitignore
+.vscode
+.idea
+
+# Documentation files
+*.md
+
+# Environment files (except example)
+.env
+.env.*
+!.env.example
+
+# Test files
+**/*.test.*
+**/*.spec.*
+tests/
+vitest.config.ts
+run-tests.bat
+
+# Backend folder (frontend doesn't need it)
+backend/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
