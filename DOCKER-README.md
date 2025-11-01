@@ -77,7 +77,7 @@ npm run dev
 
 **Backend:**
 ```bash
-cd backend
+cd src/backend
 npm install
 npm run dev
 # Runs on http://localhost:4000
@@ -92,7 +92,7 @@ npm run test:frontend
 
 **Backend Tests:**
 ```bash
-cd backend
+cd src/backend
 npm test
 npm run test:integration
 ```

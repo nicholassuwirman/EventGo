@@ -1,6 +1,6 @@
 @echo off
 echo Installing test dependencies...
-cd backend
+cd src\backend
 npm install
 
 echo.

@@ -23,7 +23,7 @@ services:
   # Backend API
   backend:
     build:
-      context: ./backend
+      context: ./src/backend
       dockerfile: Dockerfile
     container_name: eventgo-backend
     restart: unless-stopped

@@ -25,7 +25,7 @@ vitest.config.ts
 run-tests.bat
 
 # Backend folder (frontend doesn't need it)
-backend/
+src/backend/
 
 # OS files
 .DS_Store
