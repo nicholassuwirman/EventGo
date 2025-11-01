@@ -6,8 +6,7 @@ import EventsHome from './frontend/components/events/eventsHome/eventsHome'
 import ParticipantsHome from './frontend/components/participants/participantsHome' 
 import TagsHome from './frontend/components/events/tags/tagsHome'
 import LandingPage from './frontend/landingPage/landingPage'
-import MapHome from './frontend/components/map/MapHome'
-
+import MapHome from './frontend/map/map'
 import './App.css'
 
 function AppContent() {

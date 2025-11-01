@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import './mapHome.css';
+import './map.css';
 import 'leaflet/dist/leaflet.css';
 
 // Fix for default markers in Leaflet with Webpack
