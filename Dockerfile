@@ -29,8 +29,10 @@ FROM nginx:alpine
 # Copy built files from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx configuration and ensure Unix line endings
+COPY nginx.conf /tmp/nginx.conf
+RUN dos2unix /tmp/nginx.conf 2>/dev/null || sed -i 's/\r$//' /tmp/nginx.conf && \
+    mv /tmp/nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
