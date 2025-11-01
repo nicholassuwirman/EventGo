@@ -2,7 +2,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: local-eventgo-postgres
+    container_name: fwe-ha-1123080-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: eventgo_user
@@ -13,7 +13,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - eventgo-network
+      - fwe-ha-1123080-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U eventgo_user -d eventgo_db"]
       interval: 10s
@@ -25,7 +25,7 @@ services:
     build:
       context: ./src/backend
       dockerfile: Dockerfile
-    container_name: local-eventgo-backend
+    container_name: fwe-ha-1123080-backend
     restart: unless-stopped
     environment:
       DATABASE_URL: "postgresql://eventgo_user:eventgo_password@postgres:5432/eventgo_db"
@@ -37,26 +37,26 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - eventgo-network
+      - fwe-ha-1123080-network
 
   # Frontend
   frontend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: local-eventgo-frontend
+    container_name: fwe-ha-1123080-frontend
     restart: unless-stopped
     ports:
       - "80:80"
     depends_on:
       - backend
     networks:
-      - eventgo-network
+      - fwe-ha-1123080-network
 
 volumes:
   postgres_data:
     driver: local
 
 networks:
-  eventgo-network:
+  fwe-ha-1123080-network:
     driver: bridge
